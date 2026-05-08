@@ -1,0 +1,110 @@
+/* ============================================
+   PCU Quick-Book — Modal
+   ============================================ */
+
+.modal {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal--visible { opacity: 1; pointer-events: auto; }
+.body--modal-open { overflow: hidden; }
+
+.modal__dialog {
+    background: var(--pc-white); border-radius: var(--radius-lg);
+    width: 520px; max-width: 95vw; max-height: 90vh;
+    overflow-y: auto; box-shadow: var(--shadow-lg);
+    transform: translateY(20px); transition: transform 0.25s;
+}
+.modal--visible .modal__dialog { transform: translateY(0); }
+
+.modal__header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.3rem 1.8rem; border-bottom: 1px solid var(--pc-border);
+    background: var(--pc-maroon); color: white;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.modal__title { font-size: 1.15rem; font-weight: 700; }
+
+.modal__close {
+    background: none; border: none; color: white;
+    font-size: 1.8rem; line-height: 1; cursor: pointer;
+    padding: 0 0.3rem; opacity: 0.8; transition: opacity 0.2s;
+}
+.modal__close:hover { opacity: 1; }
+.modal__body { padding: 1.5rem 1.8rem 1.8rem; }
+
+/* Professor info in modal */
+.modal-prof-info {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem; background: var(--pc-off-white);
+    border-radius: var(--radius-md); margin-bottom: 1.5rem;
+    border: 1px solid var(--pc-border);
+}
+.modal-prof-info__avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    color: white; font-weight: 700; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.modal-prof-info__name { font-weight: 700; font-size: 0.95rem; color: var(--pc-text-primary); margin-bottom: 0.1rem; }
+.modal-prof-info__dept { font-size: 0.78rem; color: var(--pc-text-muted); }
+
+/* Modal form */
+.modal-form { display: flex; flex-direction: column; gap: 1rem; }
+.modal-form__row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.modal-form__row .modal-form__group { flex: 1 1 180px; }
+.modal-form__group { display: flex; flex-direction: column; gap: 0.35rem; }
+.modal-form__label { font-weight: 600; font-size: 0.85rem; color: var(--pc-text-primary); }
+
+.modal-form__input, .modal-form__textarea {
+    width: 100%; padding: 0.6rem 0.9rem;
+    font-family: var(--font-main); font-size: 0.9rem;
+    border: 1px solid var(--pc-border); border-radius: var(--radius-sm);
+    background: var(--pc-off-white);
+    transition: border 0.2s, box-shadow 0.2s; color: var(--pc-text-primary);
+}
+.modal-form__input:focus, .modal-form__textarea:focus {
+    outline: none; border-color: var(--pc-gold);
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2); background: white;
+}
+.modal-form__textarea { resize: vertical; min-height: 55px; }
+
+/* Modal time slots */
+.modal-time-slots { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.modal-time-hint { font-size: 0.82rem; color: var(--pc-text-muted); padding: 0.5rem 0; font-style: italic; }
+.modal-time-hint--warn { color: var(--pc-warning); font-style: normal; font-weight: 600; }
+
+.modal-slot-pill { display: inline-block; cursor: pointer; }
+.modal-slot-pill--blocked { cursor: not-allowed; opacity: 0.45; }
+.modal-slot-pill__radio { position: absolute; opacity: 0; pointer-events: none; }
+
+.modal-slot-pill__label {
+    display: inline-block; padding: 0.45rem 0.9rem;
+    border: 1px solid var(--pc-border); border-radius: 20px;
+    font-size: 0.82rem; font-weight: 500; background: var(--pc-off-white);
+    color: var(--pc-text-primary); transition: all 0.2s;
+}
+.modal-slot-pill__label em { font-style: normal; font-size: 0.7rem; opacity: 0.7; }
+.modal-slot-pill--free .modal-slot-pill__label em { color: var(--pc-success); }
+.modal-slot-pill--blocked .modal-slot-pill__label em { color: var(--pc-danger); }
+
+.modal-slot-pill__radio:checked + .modal-slot-pill__label {
+    background: var(--pc-maroon); color: white; border-color: var(--pc-maroon);
+    box-shadow: 0 2px 8px rgba(123, 30, 46, 0.3);
+}
+.modal-slot-pill__radio:checked + .modal-slot-pill__label em { color: var(--pc-gold-light); }
+.modal-slot-pill--free:hover .modal-slot-pill__label { background: #EDE7F6; border-color: var(--pc-gold); }
+
+/* Modal feedback */
+.modal-feedback { padding: 0.8rem 1rem; border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.5; }
+.modal-feedback--success { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; }
+.modal-feedback--error { background: #FFEBEE; color: #B71C1C; border: 1px solid #EF9A9A; }
+.modal-feedback--info { background: #E3F2FD; color: #0D47A1; border: 1px solid #90CAF9; }
+.modal-feedback ul { margin: 0.4rem 0 0 1.2rem; list-style: disc; }
+.modal-feedback li { margin-bottom: 0.15rem; }
+
+/* Modal actions */
+.modal-form__actions { display: flex; justify-content: flex-end; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }

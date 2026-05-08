@@ -1,0 +1,58 @@
+/* ============================================
+   PCU Quick-Book — Base Styles
+   CSS variables, reset, typography
+   ============================================ */
+
+:root {
+    --pc-maroon: #7B1E2E;
+    --pc-maroon-dark: #5E1623;
+    --pc-gold: #C9A84C;
+    --pc-gold-light: #E0CA7A;
+    --pc-white: #FFFFFF;
+    --pc-off-white: #F9F9F9;
+    --pc-light-gray: #F2F2F2;
+    --pc-border: #E0E0E0;
+    --pc-text-primary: #1E1E1E;
+    --pc-text-secondary: #555555;
+    --pc-text-muted: #777777;
+    --pc-success: #2E7D32;
+    --pc-warning: #F57F17;
+    --pc-danger: #B71C1C;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-accent: 'Playfair Display', 'Times New Roman', serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--pc-off-white);
+    color: var(--pc-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+.required-star {
+    color: var(--pc-danger);
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+.optional-tag {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--pc-text-muted);
+    margin-left: 4px;
+}

@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCU Faculty Consultation | Quick-Book</title>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/directory.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/notifications.css">
+    <link rel="stylesheet" href="css/portal.css">
+    <link rel="stylesheet" href="css/responsive.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,12 +22,11 @@
         <div class="top-bar__inner">
             <span class="top-bar__tag">PCU Online Services</span>
             <span class="top-bar__links">
-                <a href="#">Student Portal</a>
+                <a href="#" id="portal-link">Student Portal</a>
                 <a href="#">Faculty Directory</a>
                 <a href="#">Help Desk</a>
-                <!-- Notification Bell -->
                 <button class="notif-bell" id="notif-bell" title="Notifications" aria-label="Notifications">
-                    <span class="notif-bell__icon">🔔</span>
+                    <span class="notif-bell__icon">&#x1F514;</span>
                     <span class="notif-bell__badge" id="notif-badge" style="display:none;">0</span>
                 </button>
             </span>
@@ -32,11 +38,11 @@
         <div class="brand-header__inner">
             <div class="brand-header__logo-area">
                 <div class="brand-header__shield">
-                    <span class="brand-header__shield-icon">🎓</span>
+                    <span class="brand-header__shield-icon">&#x1F393;</span>
                 </div>
                 <div class="brand-header__text">
                     <h1 class="brand-header__uni">Philippine Christian University</h1>
-                    <p class="brand-header__sub">Manila · Since 1946</p>
+                    <p class="brand-header__sub">Manila &middot; Since 1946</p>
                 </div>
             </div>
             <div class="brand-header__badge">
@@ -56,14 +62,29 @@
         </div>
     </aside>
 
+    <!-- ========== STUDENT PORTAL OVERLAY ========== -->
+    <div class="portal-overlay" id="portal-overlay">
+        <div class="portal-header">
+            <h2 class="portal-header__title">&#x1F393; Student Portal</h2>
+            <div class="portal-header__actions">
+                <span class="portal-header__user" id="portal-header-user"></span>
+                <button class="portal-logout-btn" id="portal-logout-btn" style="display:none;">Logout</button>
+                <button class="portal-close-btn" id="portal-close">&times;</button>
+            </div>
+        </div>
+        <div class="portal-body" id="portal-body">
+            <!-- Filled by portal.js -->
+        </div>
+    </div>
+
     <!-- ========== PAGE TITLE & BREADCRUMB ========== -->
     <div class="page-title-bar">
         <div class="page-title-bar__inner">
             <nav class="breadcrumb">
                 <a href="#" class="breadcrumb__link">Home</a>
-                <span class="breadcrumb__sep">›</span>
+                <span class="breadcrumb__sep">&rsaquo;</span>
                 <a href="#" class="breadcrumb__link">Faculty Consultation</a>
-                <span class="breadcrumb__sep">›</span>
+                <span class="breadcrumb__sep">&rsaquo;</span>
                 <span class="breadcrumb__current">Quick-Book</span>
             </nav>
             <h2 class="page-title">Faculty Consultation <span class="page-title__highlight">Quick-Book</span></h2>
@@ -78,10 +99,9 @@
             <!-- ===== SIDEBAR (LEFT COLUMN) ===== -->
             <aside class="sidebar">
 
-                <!-- Quick Guidelines Card -->
                 <div class="sidebar-card sidebar-card--guidelines">
                     <div class="sidebar-card__header">
-                        <span class="sidebar-card__icon">📋</span>
+                        <span class="sidebar-card__icon">&#x1F4CB;</span>
                         <h3 class="sidebar-card__title">Booking Guidelines</h3>
                     </div>
                     <ul class="guidelines-list">
@@ -104,59 +124,44 @@
                     </ul>
                 </div>
 
-                <!-- Office Hours Card -->
                 <div class="sidebar-card sidebar-card--hours">
                     <div class="sidebar-card__header">
-                        <span class="sidebar-card__icon">🕐</span>
+                        <span class="sidebar-card__icon">&#x1F550;</span>
                         <h3 class="sidebar-card__title">Consultation Hours</h3>
                     </div>
                     <div class="hours-block">
                         <div class="hours-row">
-                            <span class="hours-row__day">Monday – Friday</span>
-                            <span class="hours-row__time">8:00 AM – 5:00 PM</span>
+                            <span class="hours-row__day">Monday &ndash; Friday</span>
+                            <span class="hours-row__time">8:00 AM &ndash; 5:00 PM</span>
                         </div>
                         <div class="hours-row">
                             <span class="hours-row__day">Saturday</span>
-                            <span class="hours-row__time">8:00 AM – 12:00 PM</span>
+                            <span class="hours-row__time">8:00 AM &ndash; 12:00 PM</span>
                         </div>
                         <div class="hours-row hours-row--closed">
-                            <span class="hours-row__day">Sunday & Holidays</span>
+                            <span class="hours-row__day">Sunday &amp; Holidays</span>
                             <span class="hours-row__time">Closed</span>
                         </div>
                     </div>
-                    <p class="hours-note">⚠️ Individual faculty availability may vary. Check the directory for exact schedules.</p>
+                    <p class="hours-note">&#x26A0;&#xFE0F; Individual faculty availability may vary. Check the directory for exact schedules.</p>
                 </div>
 
-                <!-- Smart Features Card -->
                 <div class="sidebar-card sidebar-card--smart">
                     <div class="sidebar-card__header">
-                        <span class="sidebar-card__icon">⚡</span>
+                        <span class="sidebar-card__icon">&#x26A1;</span>
                         <h3 class="sidebar-card__title">Smart Scheduling</h3>
                     </div>
                     <ul class="smart-features-list">
-                        <li class="smart-features-list__item">
-                            <span class="smart-features-list__dot"></span>
-                            <span><strong>Buffer time</strong> enforced between meetings</span>
-                        </li>
-                        <li class="smart-features-list__item">
-                            <span class="smart-features-list__dot"></span>
-                            <span><strong>Conflict detection</strong> prevents double-booking</span>
-                        </li>
-                        <li class="smart-features-list__item">
-                            <span class="smart-features-list__dot"></span>
-                            <span><strong>Auto-decline</strong> for overlapping requests</span>
-                        </li>
-                        <li class="smart-features-list__item">
-                            <span class="smart-features-list__dot"></span>
-                            <span><strong>Notification queue</strong> keeps you updated</span>
-                        </li>
+                        <li class="smart-features-list__item"><span class="smart-features-list__dot"></span><span><strong>Buffer time</strong> enforced between meetings</span></li>
+                        <li class="smart-features-list__item"><span class="smart-features-list__dot"></span><span><strong>Conflict detection</strong> prevents double-booking</span></li>
+                        <li class="smart-features-list__item"><span class="smart-features-list__dot"></span><span><strong>Auto-decline</strong> for overlapping requests</span></li>
+                        <li class="smart-features-list__item"><span class="smart-features-list__dot"></span><span><strong>Notification queue</strong> keeps you updated</span></li>
                     </ul>
                 </div>
 
-                <!-- Featured Faculty Quick-Picks -->
                 <div class="sidebar-card sidebar-card--featured">
                     <div class="sidebar-card__header">
-                        <span class="sidebar-card__icon">⭐</span>
+                        <span class="sidebar-card__icon">&#x2B50;</span>
                         <h3 class="sidebar-card__title">Featured Faculty</h3>
                     </div>
                     <div class="featured-list">
@@ -190,38 +195,23 @@
 
             <!-- ===== RIGHT COLUMN: TABS + CONTENT ===== -->
             <section class="booking-form-area">
-
-                <!-- Tab Navigation -->
                 <nav class="tab-nav">
-                    <button class="tab-btn tab-btn--active" data-tab="directory">
-                        📚 Professor Directory
-                    </button>
-                    <button class="tab-btn" data-tab="quickbook">
-                        📝 Quick-Book Form
-                    </button>
+                    <button class="tab-btn tab-btn--active" data-tab="directory">&#x1F4DA; Professor Directory</button>
+                    <button class="tab-btn" data-tab="quickbook">&#x1F4DD; Quick-Book Form</button>
                 </nav>
 
-                <!-- TAB: Professor Directory -->
                 <div class="tab-panel tab-panel--active" data-tab="directory" id="directory-panel">
                     <div class="directory-search-bar">
                         <span class="directory-search-bar__label">All Faculty Members</span>
                         <span class="directory-search-bar__hint">Click <strong>Request Meeting</strong> to book a consultation.</span>
                     </div>
-                    <div class="directory-grid" id="directory-grid">
-                        <!-- Populated by app.js -->
-                    </div>
+                    <div class="directory-grid" id="directory-grid"></div>
                 </div>
 
-                <!-- TAB: Quick-Book Form -->
                 <div class="tab-panel" data-tab="quickbook" id="quickbook-panel">
                     <form class="booking-form" action="#" method="post" novalidate>
-
-                        <!-- Section: Student Information -->
                         <fieldset class="form-section">
-                            <legend class="form-section__legend">
-                                <span class="form-section__number">1</span>
-                                Student Information
-                            </legend>
+                            <legend class="form-section__legend"><span class="form-section__number">1</span>Student Information</legend>
                             <div class="form-row form-row--two-col">
                                 <div class="form-group">
                                     <label for="student-name" class="form-label">Full Name <span class="required-star">*</span></label>
@@ -243,47 +233,42 @@
                                 </div>
                             </div>
                         </fieldset>
-
-                        <!-- Section: Faculty & Consultation Details -->
                         <fieldset class="form-section">
-                            <legend class="form-section__legend">
-                                <span class="form-section__number">2</span>
-                                Faculty & Consultation Details
-                            </legend>
+                            <legend class="form-section__legend"><span class="form-section__number">2</span>Faculty &amp; Consultation Details</legend>
                             <div class="form-row form-row--two-col">
                                 <div class="form-group">
                                     <label for="faculty-select" class="form-label">Select Faculty Member <span class="required-star">*</span></label>
                                     <select id="faculty-select" name="faculty" class="form-select" required>
-                                        <option value="" disabled selected>— Choose a faculty member —</option>
+                                        <option value="" disabled selected>&mdash; Choose a faculty member &mdash;</option>
                                         <optgroup label="College of Business Administration">
-                                            <option value="delacruz">Dr. Ricardo Dela Cruz – Business Management</option>
-                                            <option value="santos">Prof. Maria Santos – Marketing</option>
-                                            <option value="gonzales">Dr. Antonio Gonzales – Finance</option>
+                                            <option value="delacruz">Dr. Ricardo Dela Cruz &ndash; Business Management</option>
+                                            <option value="santos">Prof. Maria Santos &ndash; Marketing</option>
+                                            <option value="gonzales">Dr. Antonio Gonzales &ndash; Finance</option>
                                         </optgroup>
                                         <optgroup label="College of Education">
-                                            <option value="mendoza">Prof. Elena Mendoza – Curriculum Studies</option>
-                                            <option value="rivera">Dr. Jose Rivera – Educational Leadership</option>
+                                            <option value="mendoza">Prof. Elena Mendoza &ndash; Curriculum Studies</option>
+                                            <option value="rivera">Dr. Jose Rivera &ndash; Educational Leadership</option>
                                         </optgroup>
                                         <optgroup label="College of Computer Studies">
-                                            <option value="aguilar">Dr. Carlos Aguilar – Software Engineering</option>
-                                            <option value="torres">Prof. Patricia Torres – Data Science</option>
+                                            <option value="aguilar">Dr. Carlos Aguilar &ndash; Software Engineering</option>
+                                            <option value="torres">Prof. Patricia Torres &ndash; Data Science</option>
                                         </optgroup>
-                                        <optgroup label="College of Arts & Sciences">
-                                            <option value="ramos">Dr. Angela Ramos – Psychology</option>
-                                            <option value="castro">Prof. Luis Castro – Communication</option>
+                                        <optgroup label="College of Arts &amp; Sciences">
+                                            <option value="ramos">Dr. Angela Ramos &ndash; Psychology</option>
+                                            <option value="castro">Prof. Luis Castro &ndash; Communication</option>
                                         </optgroup>
                                         <optgroup label="College of Nursing">
-                                            <option value="fernandez">Dr. Isabel Fernandez – Clinical Nursing</option>
+                                            <option value="fernandez">Dr. Isabel Fernandez &ndash; Clinical Nursing</option>
                                         </optgroup>
                                         <optgroup label="College of Engineering">
-                                            <option value="villar">Prof. Miguel Villar – Civil Engineering</option>
+                                            <option value="villar">Prof. Miguel Villar &ndash; Civil Engineering</option>
                                         </optgroup>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="consultation-type" class="form-label">Consultation Type <span class="required-star">*</span></label>
                                     <select id="consultation-type" name="consultation_type" class="form-select" required>
-                                        <option value="" disabled selected>— Select type —</option>
+                                        <option value="" disabled selected>&mdash; Select type &mdash;</option>
                                         <option value="academic">Academic Advising</option>
                                         <option value="thesis">Thesis / Research Consultation</option>
                                         <option value="grade">Grade Concern / Review</option>
@@ -299,136 +284,64 @@
                             </div>
                             <div class="form-group">
                                 <label for="additional-notes" class="form-label">Additional Notes <span class="optional-tag">(optional)</span></label>
-                                <textarea id="additional-notes" name="additional_notes" class="form-textarea" rows="3" placeholder="Any specific topics you'd like to discuss, questions you have, or accommodations needed..."></textarea>
+                                <textarea id="additional-notes" name="additional_notes" class="form-textarea" rows="3" placeholder="Any specific topics you'd like to discuss..."></textarea>
                             </div>
                         </fieldset>
-
-                        <!-- Section: Schedule -->
                         <fieldset class="form-section">
-                            <legend class="form-section__legend">
-                                <span class="form-section__number">3</span>
-                                Schedule Your Appointment
-                            </legend>
-
-                            <!-- Mode Selection -->
+                            <legend class="form-section__legend"><span class="form-section__number">3</span>Schedule Your Appointment</legend>
                             <div class="form-group">
                                 <label class="form-label">Consultation Mode <span class="required-star">*</span></label>
                                 <div class="mode-toggle-group">
                                     <label class="mode-option">
                                         <input type="radio" name="consultation_mode" value="face-to-face" class="mode-option__radio" checked>
-                                        <span class="mode-option__card">
-                                            <span class="mode-option__icon">🏫</span>
-                                            <span class="mode-option__label">Face-to-Face</span>
-                                            <span class="mode-option__desc">On-campus meeting</span>
-                                        </span>
+                                        <span class="mode-option__card"><span class="mode-option__icon">&#x1F3EB;</span><span class="mode-option__label">Face-to-Face</span><span class="mode-option__desc">On-campus meeting</span></span>
                                     </label>
                                     <label class="mode-option">
                                         <input type="radio" name="consultation_mode" value="online" class="mode-option__radio">
-                                        <span class="mode-option__card">
-                                            <span class="mode-option__icon">💻</span>
-                                            <span class="mode-option__label">Online</span>
-                                            <span class="mode-option__desc">Via Google Meet / Zoom</span>
-                                        </span>
+                                        <span class="mode-option__card"><span class="mode-option__icon">&#x1F4BB;</span><span class="mode-option__label">Online</span><span class="mode-option__desc">Via Google Meet / Zoom</span></span>
                                     </label>
                                 </div>
                             </div>
-
-                            <!-- Date Picker -->
                             <div class="form-row form-row--date-row">
                                 <div class="form-group form-group--date">
                                     <label for="consultation-date" class="form-label">Preferred Date <span class="required-star">*</span></label>
                                     <input type="date" id="consultation-date" name="consultation_date" class="form-input form-input--date" required>
                                 </div>
                                 <div class="form-group form-group--date-hint">
-                                    <span class="date-hint">📅 Select date to see available slots.</span>
+                                    <span class="date-hint">&#x1F4C5; Select date to see available slots.</span>
                                 </div>
                             </div>
-
-                            <!-- Time Slot Selection -->
                             <div class="form-group">
                                 <label class="form-label">Select Time Slot <span class="required-star">*</span></label>
                                 <p class="time-slot__sub-label">Morning Sessions</p>
                                 <div class="time-slot-grid">
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="8:00-8:30" class="time-slot-pill__radio" required>
-                                        <span class="time-slot-pill__label">8:00 – 8:30 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="8:30-9:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">8:30 – 9:00 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="9:00-9:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">9:00 – 9:30 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="9:30-10:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">9:30 – 10:00 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="10:00-10:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">10:00 – 10:30 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="10:30-11:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">10:30 – 11:00 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="11:00-11:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">11:00 – 11:30 AM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="11:30-12:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">11:30 AM – 12:00 PM</span>
-                                    </label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="8:00-8:30" class="time-slot-pill__radio" required><span class="time-slot-pill__label">8:00 &ndash; 8:30 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="8:30-9:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">8:30 &ndash; 9:00 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="9:00-9:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">9:00 &ndash; 9:30 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="9:30-10:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">9:30 &ndash; 10:00 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="10:00-10:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">10:00 &ndash; 10:30 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="10:30-11:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">10:30 &ndash; 11:00 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="11:00-11:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">11:00 &ndash; 11:30 AM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="11:30-12:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">11:30 AM &ndash; 12:00 PM</span></label>
                                 </div>
                                 <p class="time-slot__sub-label">Afternoon Sessions</p>
                                 <div class="time-slot-grid">
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="13:00-13:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">1:00 – 1:30 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="13:30-14:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">1:30 – 2:00 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="14:00-14:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">2:00 – 2:30 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="14:30-15:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">2:30 – 3:00 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="15:00-15:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">3:00 – 3:30 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="15:30-16:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">3:30 – 4:00 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="16:00-16:30" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">4:00 – 4:30 PM</span>
-                                    </label>
-                                    <label class="time-slot-pill">
-                                        <input type="radio" name="time_slot" value="16:30-17:00" class="time-slot-pill__radio">
-                                        <span class="time-slot-pill__label">4:30 – 5:00 PM</span>
-                                    </label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="13:00-13:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">1:00 &ndash; 1:30 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="13:30-14:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">1:30 &ndash; 2:00 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="14:00-14:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">2:00 &ndash; 2:30 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="14:30-15:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">2:30 &ndash; 3:00 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="15:00-15:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">3:00 &ndash; 3:30 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="15:30-16:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">3:30 &ndash; 4:00 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="16:00-16:30" class="time-slot-pill__radio"><span class="time-slot-pill__label">4:00 &ndash; 4:30 PM</span></label>
+                                    <label class="time-slot-pill"><input type="radio" name="time_slot" value="16:30-17:00" class="time-slot-pill__radio"><span class="time-slot-pill__label">4:30 &ndash; 5:00 PM</span></label>
                                 </div>
                             </div>
                         </fieldset>
-
-                        <!-- Form Actions -->
                         <div class="form-actions">
                             <button type="reset" class="btn btn--secondary">Clear Form</button>
                             <button type="submit" class="btn btn--primary">Confirm Booking</button>
                         </div>
-                        <p class="form-disclaimer">
-                            By clicking "Confirm Booking," you agree to the PCU Faculty Consultation policies.
-                            A confirmation email will be sent to your registered email address.
-                        </p>
+                        <p class="form-disclaimer">By clicking "Confirm Booking," you agree to the PCU Faculty Consultation policies. A confirmation email will be sent to your registered email address.</p>
                     </form>
                 </div>
             </section>
@@ -443,7 +356,7 @@
                 <p class="site-footer__addr">1648 Taft Avenue, Malate, Manila, Philippines 1004</p>
             </div>
             <div class="site-footer__col site-footer__col--center">
-                <p class="site-footer__tagline">Faith · Excellence · Service</p>
+                <p class="site-footer__tagline">Faith &middot; Excellence &middot; Service</p>
             </div>
             <div class="site-footer__col site-footer__col--right">
                 <p class="site-footer__copy">&copy; 2026 PCU Faculty Consultation System</p>
@@ -460,7 +373,6 @@
                 <button class="modal__close" id="modal-close" aria-label="Close">&times;</button>
             </div>
             <div class="modal__body">
-                <!-- Professor Info -->
                 <div class="modal-prof-info">
                     <div class="modal-prof-info__avatar" id="modal-prof-avatar">--</div>
                     <div class="modal-prof-info__text">
@@ -468,11 +380,8 @@
                         <p class="modal-prof-info__dept" id="modal-prof-dept">--</p>
                     </div>
                 </div>
-
                 <form class="modal-form" id="modal-form">
                     <input type="hidden" id="modal-prof-id" value="">
-
-                    <!-- Student Fields -->
                     <div class="modal-form__row">
                         <div class="modal-form__group">
                             <label for="modal-student-name" class="modal-form__label">Your Name <span class="required-star">*</span></label>
@@ -483,31 +392,24 @@
                             <input type="text" id="modal-student-id" class="modal-form__input" placeholder="e.g., 2024-001234" required>
                         </div>
                     </div>
-
                     <div class="modal-form__group">
                         <label for="modal-student-email" class="modal-form__label">Email <span class="required-star">*</span></label>
                         <input type="email" id="modal-student-email" class="modal-form__input" placeholder="your.email@pcu.edu.ph" required>
                     </div>
-
-                    <!-- Date -->
                     <div class="modal-form__group">
                         <label for="modal-date" class="modal-form__label">Preferred Date <span class="required-star">*</span></label>
                         <input type="date" id="modal-date" class="modal-form__input" required>
                     </div>
-
-                    <!-- Dynamic Time Slots -->
                     <div class="modal-form__group">
                         <label class="modal-form__label">Available Time Slots <span class="required-star">*</span></label>
                         <div class="modal-time-slots" id="modal-time-slots">
                             <p class="modal-time-hint">Select a date to view available time slots.</p>
                         </div>
                     </div>
-
-                    <!-- Purpose -->
                     <div class="modal-form__group">
                         <label for="modal-purpose" class="modal-form__label">Purpose</label>
                         <select id="modal-purpose" class="modal-form__input">
-                            <option value="">— Select —</option>
+                            <option value="">&mdash; Select &mdash;</option>
                             <option value="Academic Advising">Academic Advising</option>
                             <option value="Thesis Consultation">Thesis / Research Consultation</option>
                             <option value="Grade Concern">Grade Concern / Review</option>
@@ -515,17 +417,11 @@
                             <option value="Other">Other Concern</option>
                         </select>
                     </div>
-
-                    <!-- Notes -->
                     <div class="modal-form__group">
                         <label for="modal-notes" class="modal-form__label">Additional Notes <span class="optional-tag">(optional)</span></label>
                         <textarea id="modal-notes" class="modal-form__textarea" rows="2" placeholder="Brief description of your concern..."></textarea>
                     </div>
-
-                    <!-- Feedback -->
                     <div class="modal-feedback" id="modal-feedback" style="display:none;"></div>
-
-                    <!-- Actions -->
                     <div class="modal-form__actions">
                         <button type="button" class="btn btn--secondary" id="modal-cancel">Cancel</button>
                         <button type="submit" class="btn btn--primary">Send Request</button>
@@ -538,7 +434,12 @@
     <!-- ========== TOAST CONTAINER ========== -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- ========== SCRIPTS ========== -->
-    <script src="app.js"></script>
+    <!-- ========== SCRIPTS (load order matters) ========== -->
+    <script src="js/data.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/portal.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,97 @@
+/* ============================================
+   PCU Quick-Book — Notifications
+   Bell, slide-out panel, toasts
+   ============================================ */
+
+/* ---- Notification Bell ---- */
+.notif-bell {
+    position: relative; background: none; border: none; cursor: pointer;
+    padding: 0.2rem; font-size: 1.2rem; color: rgba(255, 255, 255, 0.85);
+    transition: color 0.2s; line-height: 1;
+}
+.notif-bell:hover { color: var(--pc-gold); }
+.notif-bell__icon { font-size: 1.1rem; }
+
+.notif-bell__badge {
+    position: absolute; top: -6px; right: -8px;
+    width: 18px; height: 18px; background: var(--pc-danger);
+    color: white; font-size: 0.65rem; font-weight: 700;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--pc-maroon-dark);
+}
+
+/* ---- Notification Slide-Out Panel ---- */
+.notif-panel {
+    position: fixed; top: 0; right: -420px;
+    width: 400px; max-width: 90vw; height: 100vh;
+    background: var(--pc-white); box-shadow: -4px 0 24px rgba(0, 0, 0, 0.18);
+    z-index: 1000; transition: right 0.3s ease;
+    display: flex; flex-direction: column;
+}
+.notif-panel--open { right: 0; }
+
+.notif-panel__header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.2rem 1.5rem; background: var(--pc-maroon); color: white;
+}
+.notif-panel__title { font-size: 1.1rem; font-weight: 700; }
+
+.notif-panel__count {
+    background: var(--pc-gold); color: var(--pc-maroon);
+    font-weight: 700; font-size: 0.8rem; padding: 0.2rem 0.7rem; border-radius: 20px;
+}
+
+.notif-panel__list { flex: 1; overflow-y: auto; padding: 0.8rem 1.2rem; }
+.notif-empty { text-align: center; color: var(--pc-text-muted); padding: 3rem 1rem; font-size: 0.9rem; }
+
+/* Notification item */
+.notif-item { display: flex; gap: 0.8rem; padding: 0.9rem 0; border-bottom: 1px solid var(--pc-light-gray); }
+.notif-item--unread {
+    background: #FDF8F0; margin: 0 -0.5rem;
+    padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 6px; border-bottom: none;
+}
+.notif-item__icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+.notif-item__body { flex: 1; min-width: 0; }
+.notif-item__title { font-weight: 700; font-size: 0.88rem; color: var(--pc-text-primary); margin-bottom: 0.2rem; }
+.notif-item__msg { font-size: 0.8rem; color: var(--pc-text-secondary); line-height: 1.4; margin-bottom: 0.25rem; }
+.notif-item__time { font-size: 0.7rem; color: var(--pc-text-muted); }
+
+.notif-clear-btn {
+    width: 100%; padding: 0.6rem; margin-top: 1rem;
+    font-family: var(--font-main); font-size: 0.82rem; font-weight: 600;
+    color: var(--pc-maroon); background: var(--pc-light-gray);
+    border: 1px solid var(--pc-border); border-radius: 20px; cursor: pointer; transition: background 0.2s;
+}
+.notif-clear-btn:hover { background: #EDE7F6; }
+
+/* ---- Toast Notifications ---- */
+.toast-container {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 3000;
+    display: flex; flex-direction: column-reverse; gap: 0.6rem; pointer-events: none;
+}
+
+.toast {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.8rem 1.2rem; background: var(--pc-white);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--pc-maroon);
+    font-family: var(--font-main); font-size: 0.88rem; font-weight: 600;
+    color: var(--pc-text-primary); pointer-events: auto;
+    animation: toast-in 0.3s ease; max-width: 380px;
+}
+.toast--confirmation { border-left-color: var(--pc-success); }
+.toast--decline { border-left-color: var(--pc-danger); }
+.toast--info { border-left-color: #1565C0; }
+.toast--out { animation: toast-out 0.4s ease forwards; }
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(60px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toast-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(60px); }
+}
+
+.toast__icon { font-size: 1.2rem; flex-shrink: 0; }
+.toast__text { flex: 1; }
