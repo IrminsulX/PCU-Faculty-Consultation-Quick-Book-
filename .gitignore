@@ -1,0 +1,4 @@
+.deepseek/
+_debug/
+node_modules/
+*.log

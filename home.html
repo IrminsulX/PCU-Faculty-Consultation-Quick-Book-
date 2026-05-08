@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCU Faculty Consultation | Quick-Book</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ========== TOP NAVIGATION BAR ========== -->
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <span class="top-bar__tag">PCU Online Services</span>
+            <span class="top-bar__links">
+                <a href="#">Student Portal</a>
+                <a href="#">Faculty Directory</a>
+                <a href="#">Help Desk</a>
+                <!-- Notification Bell -->
+                <button class="notif-bell" id="notif-bell" title="Notifications" aria-label="Notifications">
+                    <span class="notif-bell__icon">🔔</span>
+                    <span class="notif-bell__badge" id="notif-badge" style="display:none;">0</span>
+                </button>
+            </span>
+        </div>
+    </header>
+
+    <!-- ========== MAIN HEADER WITH BRANDING ========== -->
+    <div class="brand-header">
+        <div class="brand-header__inner">
+            <div class="brand-header__logo-area">
+                <div class="brand-header__shield">
+                    <span class="brand-header__shield-icon">🎓</span>
+                </div>
+                <div class="brand-header__text">
+                    <h1 class="brand-header__uni">Philippine Christian University</h1>
+                    <p class="brand-header__sub">Manila · Since 1946</p>
+                </div>
+            </div>
+            <div class="brand-header__badge">
+                <span class="brand-header__badge-text">Quick-Book</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== NOTIFICATION SLIDE-OUT PANEL ========== -->
+    <aside class="notif-panel" id="notif-panel">
+        <div class="notif-panel__header">
+            <h3 class="notif-panel__title">Notifications</h3>
+            <span class="notif-panel__count" id="notif-panel-count"></span>
+        </div>
+        <div class="notif-panel__list" id="notif-list">
+            <div class="notif-empty">No notifications yet.</div>
+        </div>
+    </aside>
+
+    <!-- ========== PAGE TITLE & BREADCRUMB ========== -->
+    <div class="page-title-bar">
+        <div class="page-title-bar__inner">
+            <nav class="breadcrumb">
+                <a href="#" class="breadcrumb__link">Home</a>
+                <span class="breadcrumb__sep">›</span>
+                <a href="#" class="breadcrumb__link">Faculty Consultation</a>
+                <span class="breadcrumb__sep">›</span>
+                <span class="breadcrumb__current">Quick-Book</span>
+            </nav>
+            <h2 class="page-title">Faculty Consultation <span class="page-title__highlight">Quick-Book</span></h2>
+            <p class="page-subtitle">Reserve a consultation slot with your preferred faculty member in just a few clicks.</p>
+        </div>
+    </div>
+
+    <!-- ========== MAIN CONTENT AREA ========== -->
+    <main class="main-container">
+        <div class="main-container__inner">
+
+            <!-- ===== SIDEBAR (LEFT COLUMN) ===== -->
+            <aside class="sidebar">
+
+                <!-- Quick Guidelines Card -->
+                <div class="sidebar-card sidebar-card--guidelines">
+                    <div class="sidebar-card__header">
+                        <span class="sidebar-card__icon">📋</span>
+                        <h3 class="sidebar-card__title">Booking Guidelines</h3>
+                    </div>
+                    <ul class="guidelines-list">
+                        <li class="guidelines-list__item">
+                            <span class="guidelines-list__bullet">1</span>
+                            <span>Browse the <strong>Professor Directory</strong> to find your faculty member.</span>
+                        </li>
+                        <li class="guidelines-list__item">
+                            <span class="guidelines-list__bullet">2</span>
+                            <span>Click <strong>Request Meeting</strong> or use the Quick-Book form.</span>
+                        </li>
+                        <li class="guidelines-list__item">
+                            <span class="guidelines-list__bullet">3</span>
+                            <span>The system checks for <strong>conflicts &amp; buffer time</strong> automatically.</span>
+                        </li>
+                        <li class="guidelines-list__item">
+                            <span class="guidelines-list__bullet">4</span>
+                            <span>Arrive <strong>5 minutes early</strong>. Cancellations require 24-hour notice.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Office Hours Card -->
+                <div class="sidebar-card sidebar-card--hours">
+                    <div class="sidebar-card__header">
+                        <span class="sidebar-card__icon">🕐</span>
+                        <h3 class="sidebar-card__title">Consultation Hours</h3>
+                    </div>
+                    <div class="hours-block">
+                        <div class="hours-row">
+                            <span class="hours-row__day">Monday – Friday</span>
+                            <span class="hours-row__time">8:00 AM – 5:00 PM</span>
+                        </div>
+                        <div class="hours-row">
+                            <span class="hours-row__day">Saturday</span>
+                            <span class="hours-row__time">8:00 AM – 12:00 PM</span>
+                        </div>
+                        <div class="hours-row hours-row--closed">
+                            <span class="hours-row__day">Sunday & Holidays</span>
+                            <span class="hours-row__time">Closed</span>
+                        </div>
+                    </div>
+                    <p class="hours-note">⚠️ Individual faculty availability may vary. Check the directory for exact schedules.</p>
+                </div>
+
+                <!-- Smart Features Card -->
+                <div class="sidebar-card sidebar-card--smart">
+                    <div class="sidebar-card__header">
+                        <span class="sidebar-card__icon">⚡</span>
+                        <h3 class="sidebar-card__title">Smart Scheduling</h3>
+                    </div>
+                    <ul class="smart-features-list">
+                        <li class="smart-features-list__item">
+                            <span class="smart-features-list__dot"></span>
+                            <span><strong>Buffer time</strong> enforced between meetings</span>
+                        </li>
+                        <li class="smart-features-list__item">
+                            <span class="smart-features-list__dot"></span>
+                            <span><strong>Conflict detection</strong> prevents double-booking</span>
+                        </li>
+                        <li class="smart-features-list__item">
+                            <span class="smart-features-list__dot"></span>
+                            <span><strong>Auto-decline</strong> for overlapping requests</span>
+                        </li>
+                        <li class="smart-features-list__item">
+                            <span class="smart-features-list__dot"></span>
+                            <span><strong>Notification queue</strong> keeps you updated</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Featured Faculty Quick-Picks -->
+                <div class="sidebar-card sidebar-card--featured">
+                    <div class="sidebar-card__header">
+                        <span class="sidebar-card__icon">⭐</span>
+                        <h3 class="sidebar-card__title">Featured Faculty</h3>
+                    </div>
+                    <div class="featured-list">
+                        <div class="featured-item">
+                            <div class="featured-item__avatar">DS</div>
+                            <div class="featured-item__info">
+                                <p class="featured-item__name">Dr. Dela Cruz</p>
+                                <p class="featured-item__dept">College of Business</p>
+                            </div>
+                            <span class="featured-item__badge">Available Today</span>
+                        </div>
+                        <div class="featured-item">
+                            <div class="featured-item__avatar">MR</div>
+                            <div class="featured-item__info">
+                                <p class="featured-item__name">Prof. Mendoza</p>
+                                <p class="featured-item__dept">College of Education</p>
+                            </div>
+                            <span class="featured-item__badge featured-item__badge--limited">3 Slots Left</span>
+                        </div>
+                        <div class="featured-item">
+                            <div class="featured-item__avatar">AS</div>
+                            <div class="featured-item__info">
+                                <p class="featured-item__name">Dr. Aguilar</p>
+                                <p class="featured-item__dept">Computer Studies</p>
+                            </div>
+                            <span class="featured-item__badge">Available Tomorrow</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ===== RIGHT COLUMN: TABS + CONTENT ===== -->
+            <section class="booking-form-area">
+
+                <!-- Tab Navigation -->
+                <nav class="tab-nav">
+                    <button class="tab-btn tab-btn--active" data-tab="directory">
+                        📚 Professor Directory
+                    </button>
+                    <button class="tab-btn" data-tab="quickbook">
+                        📝 Quick-Book Form
+                    </button>
+                </nav>
+
+                <!-- TAB: Professor Directory -->
+                <div class="tab-panel tab-panel--active" data-tab="directory" id="directory-panel">
+                    <div class="directory-search-bar">
+                        <span class="directory-search-bar__label">All Faculty Members</span>
+                        <span class="directory-search-bar__hint">Click <strong>Request Meeting</strong> to book a consultation.</span>
+                    </div>
+                    <div class="directory-grid" id="directory-grid">
+                        <!-- Populated by app.js -->
+                    </div>
+                </div>
+
+                <!-- TAB: Quick-Book Form -->
+                <div class="tab-panel" data-tab="quickbook" id="quickbook-panel">
+                    <form class="booking-form" action="#" method="post" novalidate>
+
+                        <!-- Section: Student Information -->
+                        <fieldset class="form-section">
+                            <legend class="form-section__legend">
+                                <span class="form-section__number">1</span>
+                                Student Information
+                            </legend>
+                            <div class="form-row form-row--two-col">
+                                <div class="form-group">
+                                    <label for="student-name" class="form-label">Full Name <span class="required-star">*</span></label>
+                                    <input type="text" id="student-name" name="student_name" class="form-input" placeholder="e.g., Juan Miguel R. Santos" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-id" class="form-label">Student ID Number <span class="required-star">*</span></label>
+                                    <input type="text" id="student-id" name="student_id" class="form-input" placeholder="e.g., 2024-001234" required>
+                                </div>
+                            </div>
+                            <div class="form-row form-row--two-col">
+                                <div class="form-group">
+                                    <label for="student-email" class="form-label">Email Address <span class="required-star">*</span></label>
+                                    <input type="email" id="student-email" name="student_email" class="form-input" placeholder="your.email@pcu.edu.ph" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="student-course" class="form-label">Course / Program</label>
+                                    <input type="text" id="student-course" name="student_course" class="form-input" placeholder="e.g., BS Business Administration">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Section: Faculty & Consultation Details -->
+                        <fieldset class="form-section">
+                            <legend class="form-section__legend">
+                                <span class="form-section__number">2</span>
+                                Faculty & Consultation Details
+                            </legend>
+                            <div class="form-row form-row--two-col">
+                                <div class="form-group">
+                                    <label for="faculty-select" class="form-label">Select Faculty Member <span class="required-star">*</span></label>
+                                    <select id="faculty-select" name="faculty" class="form-select" required>
+                                        <option value="" disabled selected>— Choose a faculty member —</option>
+                                        <optgroup label="College of Business Administration">
+                                            <option value="delacruz">Dr. Ricardo Dela Cruz – Business Management</option>
+                                            <option value="santos">Prof. Maria Santos – Marketing</option>
+                                            <option value="gonzales">Dr. Antonio Gonzales – Finance</option>
+                                        </optgroup>
+                                        <optgroup label="College of Education">
+                                            <option value="mendoza">Prof. Elena Mendoza – Curriculum Studies</option>
+                                            <option value="rivera">Dr. Jose Rivera – Educational Leadership</option>
+                                        </optgroup>
+                                        <optgroup label="College of Computer Studies">
+                                            <option value="aguilar">Dr. Carlos Aguilar – Software Engineering</option>
+                                            <option value="torres">Prof. Patricia Torres – Data Science</option>
+                                        </optgroup>
+                                        <optgroup label="College of Arts & Sciences">
+                                            <option value="ramos">Dr. Angela Ramos – Psychology</option>
+                                            <option value="castro">Prof. Luis Castro – Communication</option>
+                                        </optgroup>
+                                        <optgroup label="College of Nursing">
+                                            <option value="fernandez">Dr. Isabel Fernandez – Clinical Nursing</option>
+                                        </optgroup>
+                                        <optgroup label="College of Engineering">
+                                            <option value="villar">Prof. Miguel Villar – Civil Engineering</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="consultation-type" class="form-label">Consultation Type <span class="required-star">*</span></label>
+                                    <select id="consultation-type" name="consultation_type" class="form-select" required>
+                                        <option value="" disabled selected>— Select type —</option>
+                                        <option value="academic">Academic Advising</option>
+                                        <option value="thesis">Thesis / Research Consultation</option>
+                                        <option value="grade">Grade Concern / Review</option>
+                                        <option value="career">Career Guidance</option>
+                                        <option value="personal">Personal / Wellness Check-in</option>
+                                        <option value="other">Other Concern</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="concern-subject" class="form-label">Subject / Topic of Concern <span class="required-star">*</span></label>
+                                <input type="text" id="concern-subject" name="concern_subject" class="form-input" placeholder="e.g., Clarification on Chapter 3 thesis requirements" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="additional-notes" class="form-label">Additional Notes <span class="optional-tag">(optional)</span></label>
+                                <textarea id="additional-notes" name="additional_notes" class="form-textarea" rows="3" placeholder="Any specific topics you'd like to discuss, questions you have, or accommodations needed..."></textarea>
+                            </div>
+                        </fieldset>
+
+                        <!-- Section: Schedule -->
+                        <fieldset class="form-section">
+                            <legend class="form-section__legend">
+                                <span class="form-section__number">3</span>
+                                Schedule Your Appointment
+                            </legend>
+
+                            <!-- Mode Selection -->
+                            <div class="form-group">
+                                <label class="form-label">Consultation Mode <span class="required-star">*</span></label>
+                                <div class="mode-toggle-group">
+                                    <label class="mode-option">
+                                        <input type="radio" name="consultation_mode" value="face-to-face" class="mode-option__radio" checked>
+                                        <span class="mode-option__card">
+                                            <span class="mode-option__icon">🏫</span>
+                                            <span class="mode-option__label">Face-to-Face</span>
+                                            <span class="mode-option__desc">On-campus meeting</span>
+                                        </span>
+                                    </label>
+                                    <label class="mode-option">
+                                        <input type="radio" name="consultation_mode" value="online" class="mode-option__radio">
+                                        <span class="mode-option__card">
+                                            <span class="mode-option__icon">💻</span>
+                                            <span class="mode-option__label">Online</span>
+                                            <span class="mode-option__desc">Via Google Meet / Zoom</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Date Picker -->
+                            <div class="form-row form-row--date-row">
+                                <div class="form-group form-group--date">
+                                    <label for="consultation-date" class="form-label">Preferred Date <span class="required-star">*</span></label>
+                                    <input type="date" id="consultation-date" name="consultation_date" class="form-input form-input--date" required>
+                                </div>
+                                <div class="form-group form-group--date-hint">
+                                    <span class="date-hint">📅 Select date to see available slots.</span>
+                                </div>
+                            </div>
+
+                            <!-- Time Slot Selection -->
+                            <div class="form-group">
+                                <label class="form-label">Select Time Slot <span class="required-star">*</span></label>
+                                <p class="time-slot__sub-label">Morning Sessions</p>
+                                <div class="time-slot-grid">
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="8:00-8:30" class="time-slot-pill__radio" required>
+                                        <span class="time-slot-pill__label">8:00 – 8:30 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="8:30-9:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">8:30 – 9:00 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="9:00-9:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">9:00 – 9:30 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="9:30-10:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">9:30 – 10:00 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="10:00-10:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">10:00 – 10:30 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="10:30-11:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">10:30 – 11:00 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="11:00-11:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">11:00 – 11:30 AM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="11:30-12:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">11:30 AM – 12:00 PM</span>
+                                    </label>
+                                </div>
+                                <p class="time-slot__sub-label">Afternoon Sessions</p>
+                                <div class="time-slot-grid">
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="13:00-13:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">1:00 – 1:30 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="13:30-14:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">1:30 – 2:00 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="14:00-14:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">2:00 – 2:30 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="14:30-15:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">2:30 – 3:00 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="15:00-15:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">3:00 – 3:30 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="15:30-16:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">3:30 – 4:00 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="16:00-16:30" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">4:00 – 4:30 PM</span>
+                                    </label>
+                                    <label class="time-slot-pill">
+                                        <input type="radio" name="time_slot" value="16:30-17:00" class="time-slot-pill__radio">
+                                        <span class="time-slot-pill__label">4:30 – 5:00 PM</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn--secondary">Clear Form</button>
+                            <button type="submit" class="btn btn--primary">Confirm Booking</button>
+                        </div>
+                        <p class="form-disclaimer">
+                            By clicking "Confirm Booking," you agree to the PCU Faculty Consultation policies.
+                            A confirmation email will be sent to your registered email address.
+                        </p>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <div class="site-footer__col">
+                <p class="site-footer__uni">Philippine Christian University</p>
+                <p class="site-footer__addr">1648 Taft Avenue, Malate, Manila, Philippines 1004</p>
+            </div>
+            <div class="site-footer__col site-footer__col--center">
+                <p class="site-footer__tagline">Faith · Excellence · Service</p>
+            </div>
+            <div class="site-footer__col site-footer__col--right">
+                <p class="site-footer__copy">&copy; 2026 PCU Faculty Consultation System</p>
+                <p class="site-footer__dept">Office of Academic Affairs</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== REQUEST MEETING MODAL ========== -->
+    <div class="modal" id="request-modal">
+        <div class="modal__dialog">
+            <div class="modal__header">
+                <h2 class="modal__title">Request Meeting</h2>
+                <button class="modal__close" id="modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal__body">
+                <!-- Professor Info -->
+                <div class="modal-prof-info">
+                    <div class="modal-prof-info__avatar" id="modal-prof-avatar">--</div>
+                    <div class="modal-prof-info__text">
+                        <p class="modal-prof-info__name" id="modal-prof-name">--</p>
+                        <p class="modal-prof-info__dept" id="modal-prof-dept">--</p>
+                    </div>
+                </div>
+
+                <form class="modal-form" id="modal-form">
+                    <input type="hidden" id="modal-prof-id" value="">
+
+                    <!-- Student Fields -->
+                    <div class="modal-form__row">
+                        <div class="modal-form__group">
+                            <label for="modal-student-name" class="modal-form__label">Your Name <span class="required-star">*</span></label>
+                            <input type="text" id="modal-student-name" class="modal-form__input" placeholder="Full name" required>
+                        </div>
+                        <div class="modal-form__group">
+                            <label for="modal-student-id" class="modal-form__label">Student ID <span class="required-star">*</span></label>
+                            <input type="text" id="modal-student-id" class="modal-form__input" placeholder="e.g., 2024-001234" required>
+                        </div>
+                    </div>
+
+                    <div class="modal-form__group">
+                        <label for="modal-student-email" class="modal-form__label">Email <span class="required-star">*</span></label>
+                        <input type="email" id="modal-student-email" class="modal-form__input" placeholder="your.email@pcu.edu.ph" required>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="modal-form__group">
+                        <label for="modal-date" class="modal-form__label">Preferred Date <span class="required-star">*</span></label>
+                        <input type="date" id="modal-date" class="modal-form__input" required>
+                    </div>
+
+                    <!-- Dynamic Time Slots -->
+                    <div class="modal-form__group">
+                        <label class="modal-form__label">Available Time Slots <span class="required-star">*</span></label>
+                        <div class="modal-time-slots" id="modal-time-slots">
+                            <p class="modal-time-hint">Select a date to view available time slots.</p>
+                        </div>
+                    </div>
+
+                    <!-- Purpose -->
+                    <div class="modal-form__group">
+                        <label for="modal-purpose" class="modal-form__label">Purpose</label>
+                        <select id="modal-purpose" class="modal-form__input">
+                            <option value="">— Select —</option>
+                            <option value="Academic Advising">Academic Advising</option>
+                            <option value="Thesis Consultation">Thesis / Research Consultation</option>
+                            <option value="Grade Concern">Grade Concern / Review</option>
+                            <option value="Career Guidance">Career Guidance</option>
+                            <option value="Other">Other Concern</option>
+                        </select>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="modal-form__group">
+                        <label for="modal-notes" class="modal-form__label">Additional Notes <span class="optional-tag">(optional)</span></label>
+                        <textarea id="modal-notes" class="modal-form__textarea" rows="2" placeholder="Brief description of your concern..."></textarea>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="modal-feedback" id="modal-feedback" style="display:none;"></div>
+
+                    <!-- Actions -->
+                    <div class="modal-form__actions">
+                        <button type="button" class="btn btn--secondary" id="modal-cancel">Cancel</button>
+                        <button type="submit" class="btn btn--primary">Send Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="app.js"></script>
+</body>
+</html>
