@@ -53,6 +53,9 @@
       btn.addEventListener('click', function () { PCU.switchTab(this.getAttribute('data-tab')); });
     });
 
+    // Directory controls (search, filter, sort, bulk-availability)
+    PCU.initDirectoryControls();
+
     // Modal
     var modalClose = document.getElementById('modal-close');
     if (modalClose) modalClose.addEventListener('click', PCU.closeRequestModal);

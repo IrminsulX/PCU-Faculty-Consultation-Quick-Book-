@@ -201,10 +201,38 @@
                 </nav>
 
                 <div class="tab-panel tab-panel--active" data-tab="directory" id="directory-panel">
-                    <div class="directory-search-bar">
-                        <span class="directory-search-bar__label">All Faculty Members</span>
-                        <span class="directory-search-bar__hint">Click <strong>Request Meeting</strong> to book a consultation.</span>
+                    <div class="directory-controls">
+                        <div class="dir-search">
+                            <span class="dir-search__icon">&#x1F50D;</span>
+                            <input type="text" id="dir-search-input" class="dir-search__input" placeholder="Search name, department, or specialization...">
+                            <button class="dir-search__clear" id="dir-search-clear" title="Clear search" style="display:none;">&times;</button>
+                        </div>
+                        <div class="dir-filter">
+                            <select id="dir-dept-filter" class="dir-filter__select">
+                                <option value="">All Departments</option>
+                                <option value="College of Business Administration">College of Business Administration</option>
+                                <option value="College of Education">College of Education</option>
+                                <option value="College of Computer Studies">College of Computer Studies</option>
+                                <option value="College of Arts &amp; Sciences">College of Arts &amp; Sciences</option>
+                                <option value="College of Nursing">College of Nursing</option>
+                                <option value="College of Engineering">College of Engineering</option>
+                            </select>
+                        </div>
+                        <div class="dir-sort">
+                            <label class="dir-sort__label" for="dir-sort-select">Sort:</label>
+                            <select id="dir-sort-select" class="dir-sort__select">
+                                <option value="name-asc">Name A–Z</option>
+                                <option value="dept-asc">Department</option>
+                                <option value="available">Next Available</option>
+                            </select>
+                        </div>
+                        <div class="dir-avail">
+                            <label class="dir-avail__label" for="dir-avail-date">Availability:</label>
+                            <input type="date" id="dir-avail-date" class="dir-avail__input">
+                            <button class="dir-avail__clear" id="dir-avail-clear" title="Clear date" style="display:none;">&times;</button>
+                        </div>
                     </div>
+                    <div class="directory-results-info" id="directory-results-info"></div>
                     <div class="directory-grid" id="directory-grid"></div>
                 </div>
 

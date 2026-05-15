@@ -7,30 +7,113 @@
 
   var PCU = window.PCU;
 
+  // ─── Directory Filter State ───────────────────────
+  PCU._dirFilter = { search: '', department: '', sort: 'name-asc', date: '' };
+
+  PCU.getFilteredProfessors = function () {
+    var filter = PCU._dirFilter;
+    var profs = PCU.PROFESSORS.slice();
+
+    if (filter.search) {
+      var q = filter.search.toLowerCase();
+      profs = profs.filter(function (p) {
+        return p.name.toLowerCase().indexOf(q) !== -1 ||
+               p.department.toLowerCase().indexOf(q) !== -1 ||
+               p.specialization.toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    if (filter.department) {
+      profs = profs.filter(function (p) { return p.department === filter.department; });
+    }
+
+    var dayOrder = { Sunday: 7, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+    switch (filter.sort) {
+      case 'name-asc':
+        profs.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        break;
+      case 'dept-asc':
+        profs.sort(function (a, b) {
+          return a.department.localeCompare(b.department) || a.name.localeCompare(b.name);
+        });
+        break;
+      case 'available':
+        profs.sort(function (a, b) {
+          var nextA = PCU.findNextAvailableDay(a.id);
+          var nextB = PCU.findNextAvailableDay(b.id);
+          if (!nextA && !nextB) return 0;
+          if (!nextA) return 1;
+          if (!nextB) return -1;
+          return (dayOrder[nextA] || 8) - (dayOrder[nextB] || 8);
+        });
+        break;
+    }
+    return profs;
+  };
+
   // ─── Professor Directory ──────────────────────────
   PCU.renderProfessorDirectory = function () {
     var container = document.getElementById('directory-grid');
     if (!container) return;
+
+    var profs = PCU.getFilteredProfessors();
+    var availDate = PCU._dirFilter.date;
+    var resultsInfo = document.getElementById('directory-results-info');
+
+    if (profs.length === 0) {
+      container.innerHTML = '<div class="directory-empty"><span class="directory-empty__icon">&#x1F50D;</span><p>No professors match your search.</p><p class="directory-empty__hint">Try a different name, department, or clear the filters.</p></div>';
+      if (resultsInfo) resultsInfo.innerHTML = '';
+      return;
+    }
+
+    if (resultsInfo) {
+      var label = availDate ? ' on ' + PCU.formatDate(availDate) : '';
+      resultsInfo.innerHTML = '<span class="directory-results-info__count">' + profs.length + ' professor' + (profs.length !== 1 ? 's' : '') + ' found' + label + '</span>';
+    }
+
     container.innerHTML = '';
 
-    PCU.PROFESSORS.forEach(function (prof) {
+    profs.forEach(function (prof) {
       var card = document.createElement('div');
       card.className = 'prof-card';
 
-      var today = PCU.todayStr();
-      var dayName = PCU.getDayOfWeek(today);
-      var todayHours = PCU.getConsultationHoursForDay(prof.id, dayName);
       var statusText = '', statusClass = '';
 
-      if (todayHours.length > 0) {
-        var nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-        var inSession = todayHours.some(function (h) { return nowMin >= PCU.timeToMinutes(h.start) && nowMin < PCU.timeToMinutes(h.end); });
-        statusText = inSession ? 'Available Now' : 'Available Today';
-        statusClass = inSession ? 'prof-card__status--available' : 'prof-card__status--today';
+      if (availDate) {
+        // Bulk-availability mode: show per-date slot count
+        var dayName = PCU.getDayOfWeek(availDate);
+        var slots = PCU.getAvailableSlots(prof.id, availDate, 30);
+        var totalSlots = slots.length;
+        var availCount = slots.filter(function (s) { return s.available; }).length;
+
+        if (totalSlots === 0) {
+          statusText = 'Off Day';
+          statusClass = 'prof-card__status--appointment';
+        } else if (availCount === 0) {
+          statusText = 'Fully Booked';
+          statusClass = 'prof-card__status--appointment';
+        } else {
+          statusText = availCount + ' slot' + (availCount !== 1 ? 's' : '') + ' open';
+          statusClass = availCount <= 2 ? 'prof-card__status--upcoming' : 'prof-card__status--available';
+        }
       } else {
-        var nextDay = PCU.findNextAvailableDay(prof.id);
-        statusText = nextDay ? 'Next: ' + nextDay : 'By Appointment';
-        statusClass = nextDay ? 'prof-card__status--upcoming' : 'prof-card__status--appointment';
+        // Default mode: today's availability
+        var today = PCU.todayStr();
+        var dayNameToday = PCU.getDayOfWeek(today);
+        var todayHours = PCU.getConsultationHoursForDay(prof.id, dayNameToday);
+
+        if (todayHours.length > 0) {
+          var nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+          var inSession = todayHours.some(function (h) {
+            return nowMin >= PCU.timeToMinutes(h.start) && nowMin < PCU.timeToMinutes(h.end);
+          });
+          statusText = inSession ? 'Available Now' : 'Available Today';
+          statusClass = inSession ? 'prof-card__status--available' : 'prof-card__status--today';
+        } else {
+          var nextDay = PCU.findNextAvailableDay(prof.id);
+          statusText = nextDay ? 'Next: ' + nextDay : 'By Appointment';
+          statusClass = nextDay ? 'prof-card__status--upcoming' : 'prof-card__status--appointment';
+        }
       }
 
       var hoursHTML = prof.consultationHours.map(function (ch) {
@@ -60,6 +143,45 @@
     container.querySelectorAll('.prof-card__book-btn').forEach(function (btn) {
       btn.addEventListener('click', function () { PCU.openRequestModal(this.getAttribute('data-prof-id')); });
     });
+  };
+
+  // ─── Directory Controls ───────────────────────────
+  PCU.initDirectoryControls = function () {
+    var searchInput = document.getElementById('dir-search-input');
+    var searchClear = document.getElementById('dir-search-clear');
+    var deptFilter = document.getElementById('dir-dept-filter');
+    var sortSelect = document.getElementById('dir-sort-select');
+    var availDate = document.getElementById('dir-avail-date');
+    var availClear = document.getElementById('dir-avail-clear');
+
+    function applyFilters() {
+      PCU._dirFilter.search = searchInput ? searchInput.value.trim() : '';
+      PCU._dirFilter.department = deptFilter ? deptFilter.value : '';
+      PCU._dirFilter.sort = sortSelect ? sortSelect.value : 'name-asc';
+      PCU._dirFilter.date = availDate ? availDate.value : '';
+      PCU.renderProfessorDirectory();
+      if (searchClear) searchClear.style.display = PCU._dirFilter.search ? 'inline-block' : 'none';
+      if (availClear) availClear.style.display = PCU._dirFilter.date ? 'inline-block' : 'none';
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (searchClear) searchClear.addEventListener('click', function () {
+      searchInput.value = '';
+      applyFilters();
+    });
+    if (deptFilter) deptFilter.addEventListener('change', applyFilters);
+    if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+    if (availDate) availDate.addEventListener('change', applyFilters);
+    if (availClear) availClear.addEventListener('click', function () {
+      availDate.value = '';
+      applyFilters();
+    });
+
+    // Set min date to tomorrow
+    if (availDate) {
+      var t = new Date(); t.setDate(t.getDate() + 1);
+      availDate.min = t.toISOString().split('T')[0];
+    }
   };
 
   // ─── Modal ─────────────────────────────────────────

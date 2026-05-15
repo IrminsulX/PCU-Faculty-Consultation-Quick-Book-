@@ -2,19 +2,116 @@
    PCU Quick-Book — Professor Directory
    ============================================ */
 
-.directory-search-bar {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 0.8rem;
-    margin-bottom: 1.8rem; padding-bottom: 1rem;
+/* ---- Directory Controls (Search / Filter / Sort / Availability) ---- */
+.directory-controls {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem; padding-bottom: 1rem;
     border-bottom: 1px solid var(--pc-border);
 }
 
-.directory-search-bar__label {
-    font-family: var(--font-accent); font-size: 1.3rem;
-    font-weight: 700; color: var(--pc-maroon);
+/* Search */
+.dir-search {
+    position: relative; flex: 1 1 220px; min-width: 180px;
+    display: flex; align-items: center;
+}
+.dir-search__icon {
+    position: absolute; left: 0.75rem; font-size: 0.95rem;
+    color: var(--pc-text-muted); pointer-events: none;
+}
+.dir-search__input {
+    width: 100%; padding: 0.55rem 2rem 0.55rem 2.4rem;
+    border: 1px solid var(--pc-border); border-radius: 8px;
+    font-family: var(--font-main); font-size: 0.85rem;
+    color: var(--pc-text-primary); background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dir-search__input:focus {
+    outline: none; border-color: var(--pc-gold);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+.dir-search__input::placeholder { color: var(--pc-text-muted); }
+.dir-search__clear {
+    position: absolute; right: 0.4rem;
+    background: none; border: none; font-size: 1.2rem;
+    color: var(--pc-text-muted); cursor: pointer;
+    padding: 0.2rem 0.45rem; line-height: 1; border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+}
+.dir-search__clear:hover { color: var(--pc-maroon); background: #f5f0eb; }
+
+/* Department filter */
+.dir-filter { flex: 0 0 auto; }
+.dir-filter__select {
+    padding: 0.55rem 2rem 0.55rem 0.75rem;
+    border: 1px solid var(--pc-border); border-radius: 8px;
+    font-family: var(--font-main); font-size: 0.85rem;
+    color: var(--pc-text-primary); background: #fff;
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.65rem center;
+    transition: border-color 0.2s;
+}
+.dir-filter__select:focus { outline: none; border-color: var(--pc-gold); }
+
+/* Sort */
+.dir-sort { display: flex; align-items: center; gap: 0.4rem; flex: 0 0 auto; }
+.dir-sort__label {
+    font-size: 0.78rem; font-weight: 600; color: var(--pc-text-muted);
+    white-space: nowrap;
+}
+.dir-sort__select {
+    padding: 0.55rem 1.8rem 0.55rem 0.6rem;
+    border: 1px solid var(--pc-border); border-radius: 8px;
+    font-family: var(--font-main); font-size: 0.85rem;
+    color: var(--pc-text-primary); background: #fff;
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 0.5rem center;
+    transition: border-color 0.2s;
+}
+.dir-sort__select:focus { outline: none; border-color: var(--pc-gold); }
+
+/* Bulk availability date picker */
+.dir-avail { display: flex; align-items: center; gap: 0.4rem; flex: 0 0 auto; }
+.dir-avail__label {
+    font-size: 0.78rem; font-weight: 600; color: var(--pc-text-muted);
+    white-space: nowrap;
+}
+.dir-avail__input {
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--pc-border); border-radius: 8px;
+    font-family: var(--font-main); font-size: 0.85rem;
+    color: var(--pc-text-primary); background: #fff;
+    cursor: pointer; transition: border-color 0.2s;
+}
+.dir-avail__input:focus { outline: none; border-color: var(--pc-gold); }
+.dir-avail__clear {
+    background: none; border: none; font-size: 1.2rem;
+    color: var(--pc-text-muted); cursor: pointer;
+    padding: 0.15rem 0.4rem; line-height: 1; border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+}
+.dir-avail__clear:hover { color: var(--pc-maroon); background: #f5f0eb; }
+
+/* Results info bar */
+.directory-results-info {
+    margin-bottom: 1rem; padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--pc-border);
+}
+.directory-results-info__count {
+    font-size: 0.82rem; font-weight: 600; color: var(--pc-gold);
 }
 
-.directory-search-bar__hint { font-size: 0.85rem; color: var(--pc-text-muted); }
+/* Empty state */
+.directory-empty {
+    grid-column: 1 / -1;
+    text-align: center; padding: 3rem 1rem;
+    color: var(--pc-text-muted);
+}
+.directory-empty__icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+.directory-empty p { font-size: 0.95rem; margin-bottom: 0.25rem; }
+.directory-empty__hint { font-size: 0.82rem; opacity: 0.7; }
 
 /* ---- Directory Grid ---- */
 .directory-grid {
