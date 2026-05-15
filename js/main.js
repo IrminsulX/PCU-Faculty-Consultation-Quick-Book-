@@ -36,6 +36,9 @@
 
   // ─── Event Wiring ──────────────────────────────────
   function attachEventListeners() {
+    // Top bar (hamburger menu, mobile nav)
+    PCU.initTopBar();
+
     // Notification bell
     var bell = document.getElementById('notif-bell');
     if (bell) bell.addEventListener('click', PCU.toggleNotifPanel);
