@@ -17,7 +17,8 @@
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         position: fixed; bottom: 0; left: 0; max-height: 85vh;
     }
-    .notif-panel { width: 100%; max-width: 100%; right: -100%; }
+    .notif-panel { width: 100%; max-width: 100%; }
+    .notif-panel:not(.notif-panel--open) { right: -100%; }
 
     .portal-login { margin: 2rem 1rem; padding: 1.5rem; }
     .portal-student-card { flex-direction: column; text-align: center; }

@@ -66,7 +66,6 @@
     if (modalCancel) modalCancel.addEventListener('click', PCU.closeRequestModal);
     var modal = document.getElementById('request-modal');
     if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) PCU.closeRequestModal(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') PCU.closeRequestModal(); });
     var modalDate = document.getElementById('modal-date');
     if (modalDate) modalDate.addEventListener('change', PCU.updateModalTimeSlots);
     var modalForm = document.getElementById('modal-form');
@@ -91,6 +90,27 @@
       portalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openPortal(); });
     }
 
+    // Help Desk link
+    var helpdeskLink = document.getElementById('helpdesk-link');
+    if (helpdeskLink) {
+      helpdeskLink.addEventListener('click', function (e) { e.preventDefault(); PCU.toggleHelpDesk(); });
+    }
+
+    // Help Desk close button
+    var helpdeskClose = document.getElementById('helpdesk-close');
+    if (helpdeskClose) helpdeskClose.addEventListener('click', function () {
+      document.getElementById('helpdesk-panel').classList.remove('helpdesk-panel--open');
+    });
+
+    // Close Help Desk on outside click
+    document.addEventListener('click', function (e) {
+      var panel = document.getElementById('helpdesk-panel');
+      var link = document.getElementById('helpdesk-link');
+      if (panel && panel.classList.contains('helpdesk-panel--open') && !panel.contains(e.target) && e.target !== link && (!link || !link.contains(e.target))) {
+        panel.classList.remove('helpdesk-panel--open');
+      }
+    });
+
     // Portal close
     var portalClose = document.getElementById('portal-close');
     if (portalClose) portalClose.addEventListener('click', PCU.closePortal);
@@ -99,13 +119,20 @@
     var logoutBtn = document.getElementById('portal-logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', PCU.logoutStudent);
 
-    // Portal escape
+    // Escape key — close modals, portal, help desk
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         var portalOverlay = document.getElementById('portal-overlay');
         if (portalOverlay && portalOverlay.classList.contains('portal-overlay--open')) {
           PCU.closePortal();
+          return;
         }
+        var hdPanel = document.getElementById('helpdesk-panel');
+        if (hdPanel && hdPanel.classList.contains('helpdesk-panel--open')) {
+          hdPanel.classList.remove('helpdesk-panel--open');
+          return;
+        }
+        PCU.closeRequestModal();
       }
     });
   }
