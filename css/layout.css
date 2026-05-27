@@ -166,7 +166,7 @@
 
 /* ---------- Brand Header ---------- */
 .brand-header {
-    background: linear-gradient(135deg, #FFFFFF 0%, #FDF8F0 100%);
+    background: linear-gradient(135deg, #FFFFFF 0%, #F2F6FB 100%);
     border-bottom: 2px solid var(--pc-gold);
     padding: 1.5rem 0;
 }
@@ -363,7 +363,7 @@
 
 .tab-btn:hover {
     color: var(--pc-maroon);
-    background: rgba(123, 30, 46, 0.04);
+    background: rgba(27, 58, 107, 0.04);
 }
 
 .tab-btn--active {

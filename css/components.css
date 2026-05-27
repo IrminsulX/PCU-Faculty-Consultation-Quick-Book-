@@ -191,8 +191,8 @@
 .mode-option__desc { font-size: 0.8rem; color: var(--pc-text-muted); }
 
 .mode-option__radio:checked + .mode-option__card {
-    border-color: var(--pc-maroon); background: #FDF2F4;
-    box-shadow: 0 0 0 3px rgba(123, 30, 46, 0.15);
+    border-color: var(--pc-maroon); background: #EDF2F9;
+    box-shadow: 0 0 0 3px rgba(27, 58, 107, 0.15);
 }
 .mode-option__radio:focus-visible + .mode-option__card {
     outline: 2px solid var(--pc-gold); outline-offset: 2px;
@@ -225,7 +225,7 @@
 
 .time-slot-pill__radio:checked + .time-slot-pill__label {
     background: var(--pc-maroon); color: white; border-color: var(--pc-maroon);
-    box-shadow: 0 2px 8px rgba(123, 30, 46, 0.3); font-weight: 600;
+    box-shadow: 0 2px 8px rgba(27, 58, 107, 0.3); font-weight: 600;
 }
 .time-slot-pill__radio:focus-visible + .time-slot-pill__label {
     outline: 2px solid var(--pc-gold); outline-offset: 2px;
@@ -252,7 +252,7 @@
 .btn--secondary {
     background: var(--pc-white); color: var(--pc-maroon); border: 1px solid var(--pc-maroon);
 }
-.btn--secondary:hover { background: #FDF2F4; border-color: var(--pc-maroon-dark); }
+.btn--secondary:hover { background: #EDF2F9; border-color: var(--pc-maroon-dark); }
 
 .btn--danger { background: var(--pc-danger); color: white; }
 .btn--danger:hover { background: #7F0000; box-shadow: var(--shadow-md); transform: translateY(-1px); }

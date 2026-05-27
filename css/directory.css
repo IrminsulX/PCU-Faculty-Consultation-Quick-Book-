@@ -38,7 +38,7 @@
     padding: 0.2rem 0.45rem; line-height: 1; border-radius: 50%;
     transition: color 0.15s, background 0.15s;
 }
-.dir-search__clear:hover { color: var(--pc-maroon); background: #f5f0eb; }
+.dir-search__clear:hover { color: var(--pc-maroon); background: #E8F0FB; }
 
 /* Department filter */
 .dir-filter { flex: 0 0 auto; }
@@ -92,7 +92,7 @@
     padding: 0.15rem 0.4rem; line-height: 1; border-radius: 50%;
     transition: color 0.15s, background 0.15s;
 }
-.dir-avail__clear:hover { color: var(--pc-maroon); background: #f5f0eb; }
+.dir-avail__clear:hover { color: var(--pc-maroon); background: #E8F0FB; }
 
 /* Results info bar */
 .directory-results-info {

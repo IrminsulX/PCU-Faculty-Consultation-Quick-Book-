@@ -93,7 +93,7 @@
 
 .modal-slot-pill__radio:checked + .modal-slot-pill__label {
     background: var(--pc-maroon); color: white; border-color: var(--pc-maroon);
-    box-shadow: 0 2px 8px rgba(123, 30, 46, 0.3);
+    box-shadow: 0 2px 8px rgba(27, 58, 107, 0.3);
 }
 .modal-slot-pill__radio:checked + .modal-slot-pill__label em { color: var(--pc-gold-light); }
 .modal-slot-pill--free:hover .modal-slot-pill__label { background: #EDE7F6; border-color: var(--pc-gold); }
