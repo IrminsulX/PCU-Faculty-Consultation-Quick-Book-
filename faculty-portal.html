@@ -18,8 +18,9 @@
     <!-- ========== PORTAL HEADER ========== -->
     <div class="portal-page-header portal-page-header--faculty">
         <div class="portal-page-header__inner">
-            <a href="home.html" class="portal-page-header__back">&larr; Back to Quick-Book</a>
-            <h1 class="portal-page-header__title">&#x1F468;&#x200D;&#x1F3EB; Faculty Portal</h1>
+            <a href="home.html" class="portal-page-header__back">&larr; Back</a>
+            <div class="portal-page-header__logo">&#x1F468;&#x200D;&#x1F3EB;</div>
+            <h1 class="portal-page-header__title">Faculty Portal</h1>
             <div class="portal-page-header__actions">
                 <span class="portal-page-header__user" id="faculty-portal-header-user"></span>
                 <button class="portal-logout-btn" id="faculty-portal-logout-btn" style="display:none;">Logout</button>
@@ -60,46 +61,44 @@
         'use strict';
         var PCU = window.PCU;
 
-        function checkAuth() {
-            var saved = localStorage.getItem('pcu_current_user');
-            if (saved) {
-                try {
-                    PCU.currentUser = JSON.parse(saved);
-                    if (PCU.currentUser.role === 'faculty') return true;
-                } catch(e) {}
-            }
-            return false;
-        }
-
         async function init() {
             try {
                 await PCU.initDatabase();
                 PCU.loadAllFacultySchedules();
-            } catch(e) {}
-
-            if (checkAuth()) {
-                // Auto-login faculty from session
-                var user = PCU.currentUser;
-                PCU.currentFaculty = {
-                    id: null,
-                    faculty_id: user.user_id,
-                    name: user.name,
-                    email: user.email,
-                    department: user.department || '',
-                    specialization: user.specialization || '',
-                    initials: user.name.split(' ').map(function(n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
-                };
-                PCU.renderFacultyPortal();
-            } else {
-                var body = document.getElementById('faculty-portal-body');
-                body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div><h2 class="portal-login__title">Faculty Portal</h2><p class="portal-login__subtitle">Please log in first to access the Faculty Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+            } catch(e) {
+                console.warn('Database init failed:', e);
             }
 
-            document.getElementById('faculty-portal-logout-btn').addEventListener('click', function() {
-                localStorage.removeItem('pcu_current_user');
-                window.location.href = 'home.html';
-            });
+            // Check session properly
+            var saved = localStorage.getItem('pcu_current_user');
+            if (saved) {
+                try {
+                    PCU.currentUser = JSON.parse(saved);
+                    var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
+                    if (user && user.status === 'approved' && user.role === 'faculty') {
+                        PCU.currentFaculty = {
+                            id: user.id,
+                            faculty_id: user.user_id,
+                            name: user.name,
+                            email: user.email,
+                            department: user.department || '',
+                            specialization: user.specialization || '',
+                            initials: user.name.split(' ').map(function(n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
+                        };
+                        PCU.renderFacultyPortal();
+                        return;
+                    }
+                } catch(e) {}
+            }
+
+            var body = document.getElementById('faculty-portal-body');
+            body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div><h2 class="portal-login__title">Faculty Portal</h2><p class="portal-login__subtitle">Please log in first to access the Faculty Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
         }
+
+        document.getElementById('faculty-portal-logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('pcu_current_user');
+            window.location.href = 'home.html';
+        });
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);

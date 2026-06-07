@@ -17,8 +17,9 @@
     <!-- ========== PORTAL HEADER ========== -->
     <div class="portal-page-header">
         <div class="portal-page-header__inner">
-            <a href="home.html" class="portal-page-header__back">&larr; Back to Quick-Book</a>
-            <h1 class="portal-page-header__title">&#x1F393; Student Portal</h1>
+            <a href="home.html" class="portal-page-header__back">&larr; Back</a>
+            <div class="portal-page-header__logo">&#x1F393;</div>
+            <h1 class="portal-page-header__title">Student Portal</h1>
             <div class="portal-page-header__actions">
                 <span class="portal-page-header__user" id="portal-header-user"></span>
                 <button class="portal-logout-btn" id="portal-logout-btn" style="display:none;">Logout</button>
@@ -59,40 +60,38 @@
         'use strict';
         var PCU = window.PCU;
 
-        // Check if user is logged in as student
-        function checkAuth() {
-            var saved = localStorage.getItem('pcu_current_user');
-            if (saved) {
-                try {
-                    PCU.currentUser = JSON.parse(saved);
-                    if (PCU.currentUser.role === 'student') return true;
-                } catch(e) {}
-            }
-            return false;
-        }
-
-        // Init
         async function init() {
             try {
                 await PCU.initDatabase();
                 PCU.loadAllFacultySchedules();
-            } catch(e) {}
-
-            if (checkAuth()) {
-                PCU.autoLoginStudent();
-                PCU.renderPortal();
-            } else {
-                // Show login form
-                var body = document.getElementById('portal-body');
-                body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in first to access the Student Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+            } catch(e) {
+                console.warn('Database init failed:', e);
             }
 
-            // Logout button
-            document.getElementById('portal-logout-btn').addEventListener('click', function() {
-                localStorage.removeItem('pcu_current_user');
-                window.location.href = 'home.html';
-            });
+            // Check session properly
+            var saved = localStorage.getItem('pcu_current_user');
+            if (saved) {
+                try {
+                    PCU.currentUser = JSON.parse(saved);
+                    // Verify user exists in DB
+                    var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
+                    if (user && user.status === 'approved' && user.role === 'student') {
+                        PCU.autoLoginStudent();
+                        PCU.renderPortal();
+                        return;
+                    }
+                } catch(e) {}
+            }
+
+            // Not logged in - show login prompt
+            var body = document.getElementById('portal-body');
+            body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in first to access the Student Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
         }
+
+        document.getElementById('portal-logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('pcu_current_user');
+            window.location.href = 'home.html';
+        });
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
