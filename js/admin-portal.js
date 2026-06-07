@@ -1,51 +1,33 @@
 /* ============================================
    PCU Quick-Book — Admin Portal
-   User management, faculty approval
+   User management, faculty approval (uses API)
    ============================================ */
 (function () {
   'use strict';
 
   var PCU = window.PCU;
 
-  // ─── Admin Portal Open / Close ───────────────────
-  PCU.openAdminPortal = function () {
-    var overlay = document.getElementById('admin-portal-overlay');
-    if (overlay) {
-      overlay.classList.add('admin-portal-overlay--open');
-      document.body.style.overflow = 'hidden';
-    }
-    PCU.renderAdminPortal();
-  };
-
-  PCU.closeAdminPortal = function () {
-    var overlay = document.getElementById('admin-portal-overlay');
-    if (overlay) {
-      overlay.classList.remove('admin-portal-overlay--open');
-      document.body.style.overflow = '';
-    }
-  };
-
   // ─── Render Admin Portal ─────────────────────────
-  PCU.renderAdminPortal = function () {
+  PCU.renderAdminPortal = async function () {
     var body = document.getElementById('admin-portal-body');
     if (!body) return;
 
-    // Update header
     var userEl = document.getElementById('admin-portal-header-user');
     if (userEl) userEl.textContent = PCU.currentUser ? PCU.currentUser.name : '';
     var logoutBtn = document.getElementById('admin-portal-logout-btn');
     if (logoutBtn) logoutBtn.style.display = PCU.currentUser ? 'inline-block' : 'none';
 
-    var html = '<div class="portal-dashboard">';
+    // Fetch data from API
+    var allUsers = await PCU.apiGetAllUsers();
+    var stats = await PCU.apiGetStats();
 
-    // Stats
-    var allUsers = PCU.dbGetAllUsers();
     var pendingFaculty = allUsers.filter(function (u) { return u.role === 'faculty' && u.status === 'pending'; });
     var approvedFaculty = allUsers.filter(function (u) { return u.role === 'faculty' && u.status === 'approved'; });
     var students = allUsers.filter(function (u) { return u.role === 'student'; });
-    var admins = allUsers.filter(function (u) { return u.role === 'admin'; });
-    var stats = PCU.dbGetStats ? PCU.dbGetStats() : { students: 0, faculty: 0, bookings: 0, confirmed: 0, declined: 0, cancelled: 0 };
 
+    var html = '<div class="portal-dashboard">';
+
+    // Stats
     html += '<div class="admin-stats-grid">' +
       '<div class="admin-stat-card">' +
         '<div class="admin-stat-card__number">' + allUsers.length + '</div>' +
@@ -69,7 +51,7 @@
       '</div>' +
     '</div>';
 
-    // Reset Database Button
+    // Reset Database
     html += '<div class="admin-section">' +
       '<div class="admin-section__header">' +
         '<h3 class="admin-section__title">&#x1F504; Database Management</h3>' +
@@ -80,7 +62,7 @@
       '</div>' +
     '</div>';
 
-    // Pending Faculty Approvals
+    // Pending Faculty
     html += '<div class="admin-section">' +
       '<div class="admin-section__header">' +
         '<h3 class="admin-section__title">&#x23F3; Pending Faculty Approvals (' + pendingFaculty.length + ')</h3>' +
@@ -90,10 +72,7 @@
       html += '<div class="admin-empty">No pending faculty registrations.</div>';
     } else {
       html += '<div class="admin-table-wrapper"><table class="admin-table">' +
-        '<thead><tr>' +
-          '<th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Registered</th><th>Actions</th>' +
-        '</tr></thead><tbody>';
-
+        '<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Actions</th></tr></thead><tbody>';
       pendingFaculty.forEach(function (u) {
         html += '<tr>' +
           '<td><strong>' + u.user_id + '</strong></td>' +
@@ -101,14 +80,11 @@
           '<td>' + u.email + '</td>' +
           '<td>' + (u.department || '-') + '</td>' +
           '<td>' + (u.specialization || '-') + '</td>' +
-          '<td>' + PCU.formatDate(u.created_at ? u.created_at.split(' ')[0] : '') + '</td>' +
           '<td>' +
             '<button class="admin-action-btn admin-action-btn--approve" data-action="approve" data-user-id="' + u.user_id + '">Approve</button> ' +
             '<button class="admin-action-btn admin-action-btn--reject" data-action="reject" data-user-id="' + u.user_id + '">Reject</button>' +
-          '</td>' +
-        '</tr>';
+          '</td></tr>';
       });
-
       html += '</tbody></table></div>';
     }
     html += '</div>';
@@ -123,15 +99,11 @@
       html += '<div class="admin-empty">No users found.</div>';
     } else {
       html += '<div class="admin-table-wrapper"><table class="admin-table">' +
-        '<thead><tr>' +
-          '<th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th>Actions</th>' +
-        '</tr></thead><tbody>';
-
+        '<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th>Actions</th></tr></thead><tbody>';
       allUsers.forEach(function (u) {
         var statusBadge = 'admin-badge--' + u.status;
         var roleBadge = 'admin-badge--' + u.role;
-        var canDelete = u.user_id !== 'admin'; // Don't allow deleting the main admin
-
+        var canDelete = u.user_id !== 'admin';
         html += '<tr>' +
           '<td><strong>' + u.user_id + '</strong></td>' +
           '<td>' + u.name + '</td>' +
@@ -139,17 +111,13 @@
           '<td><span class="admin-badge ' + roleBadge + '">' + u.role.charAt(0).toUpperCase() + u.role.slice(1) + '</span></td>' +
           '<td><span class="admin-badge ' + statusBadge + '">' + u.status.charAt(0).toUpperCase() + u.status.slice(1) + '</span></td>' +
           '<td>' + (u.department || '-') + '</td>' +
-          '<td>' +
-            (canDelete ? '<button class="admin-action-btn admin-action-btn--delete" data-action="delete" data-user-id="' + u.user_id + '">Delete</button>' : '<span style="color:#999;font-size:0.8rem;">Protected</span>') +
-          '</td>' +
+          '<td>' + (canDelete ? '<button class="admin-action-btn admin-action-btn--delete" data-action="delete" data-user-id="' + u.user_id + '">Delete</button>' : '<span style="color:#999;font-size:0.8rem;">Protected</span>') + '</td>' +
         '</tr>';
       });
-
       html += '</tbody></table></div>';
     }
-    html += '</div>';
+    html += '</div></div>';
 
-    html += '</div>';
     body.innerHTML = html;
 
     // Attach action listeners
@@ -157,51 +125,42 @@
       btn.addEventListener('click', function () {
         var action = this.getAttribute('data-action');
         var userId = this.getAttribute('data-user-id');
-        if (action) PCU.handleAdminAction(action, userId);
+        PCU.handleAdminAction(action, userId);
       });
     });
 
     // Reset DB button
     var resetBtn = document.getElementById('admin-reset-db-btn');
     if (resetBtn) {
-      resetBtn.addEventListener('click', function () {
-        if (confirm('Are you sure you want to reset the database? All data will be lost.')) {
-          PCU.resetDatabase();
+      resetBtn.addEventListener('click', async function () {
+        if (confirm('Are you sure you want to reset the database?')) {
+          await PCU.apiResetDatabase();
+          localStorage.removeItem('pcu_current_user');
+          localStorage.removeItem('pcu_session_id');
+          window.location.href = 'home.html';
         }
       });
     }
   };
 
   // ─── Handle Admin Actions ────────────────────────
-  PCU.handleAdminAction = function (action, userId) {
+  PCU.handleAdminAction = async function (action, userId) {
     switch (action) {
       case 'approve':
-        if (confirm('Approve this faculty member? They will be able to log in.')) {
-          PCU.dbUpdateUserStatus(userId, 'approved');
-          PCU.addNotification({
-            type: 'confirmation',
-            title: 'Faculty Approved',
-            message: 'Faculty account for ' + userId + ' has been approved.',
-            professorId: '', professorName: ''
-          });
+        if (confirm('Approve this faculty member?')) {
+          await PCU.apiUpdateUserStatus(userId, 'approved');
           PCU.renderAdminPortal();
         }
         break;
       case 'reject':
-        if (confirm('Reject this faculty member? They will not be able to log in.')) {
-          PCU.dbUpdateUserStatus(userId, 'rejected');
-          PCU.addNotification({
-            type: 'decline',
-            title: 'Faculty Rejected',
-            message: 'Faculty account for ' + userId + ' has been rejected.',
-            professorId: '', professorName: ''
-          });
+        if (confirm('Reject this faculty member?')) {
+          await PCU.apiUpdateUserStatus(userId, 'rejected');
           PCU.renderAdminPortal();
         }
         break;
       case 'delete':
-        if (confirm('Delete this user? This action cannot be undone.')) {
-          PCU.dbDeleteUser(userId);
+        if (confirm('Delete this user? This cannot be undone.')) {
+          await PCU.apiDeleteUser(userId);
           PCU.renderAdminPortal();
         }
         break;

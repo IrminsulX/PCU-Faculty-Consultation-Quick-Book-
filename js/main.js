@@ -154,18 +154,34 @@
   // ─── Update Nav Based on User Role ────────────────
   function updateNavForUser() {
     var adminLink = document.getElementById('admin-portal-link');
+    var portalLink = document.getElementById('portal-link');
+    var facultyLink = document.getElementById('faculty-portal-link');
     var logoutLink = document.getElementById('logout-link');
 
     if (PCU.currentUser) {
-      // Show logout link
       if (logoutLink) logoutLink.style.display = '';
 
-      // Show admin link only for admin users
-      if (adminLink) {
-        adminLink.style.display = PCU.isAdmin() ? '' : 'none';
+      // Hide all portal links by default, then show only the relevant ones
+      if (adminLink) adminLink.style.display = 'none';
+      if (portalLink) portalLink.style.display = 'none';
+      if (facultyLink) facultyLink.style.display = 'none';
+
+      switch (PCU.currentUser.role) {
+        case 'admin':
+          if (adminLink) adminLink.style.display = '';
+          break;
+        case 'faculty':
+          if (facultyLink) facultyLink.style.display = '';
+          break;
+        case 'student':
+          if (portalLink) portalLink.style.display = '';
+          break;
       }
     } else {
+      // Not logged in: show Student and Faculty portals only
       if (adminLink) adminLink.style.display = 'none';
+      if (portalLink) portalLink.style.display = '';
+      if (facultyLink) facultyLink.style.display = '';
       if (logoutLink) logoutLink.style.display = 'none';
     }
   }
@@ -196,7 +212,7 @@
     }
 
     // Initialize authentication
-    var isLoggedIn = PCU.initAuth();
+    var isLoggedIn = await PCU.initAuth();
 
     if (isLoggedIn) {
       PCU.showMainApp();

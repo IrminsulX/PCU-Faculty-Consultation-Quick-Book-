@@ -273,27 +273,30 @@
     PCU.hideMainApp();
   };
 
-  // ─── Check Session ───────────────────────────────
-  PCU.checkSession = function () {
+  // ─── Check Session (async via API) ───────────────
+  PCU.checkSession = async function () {
+    var sessionId = localStorage.getItem('pcu_session_id');
+    if (!sessionId) return false;
+
+    try {
+      var result = await PCU.apiCheckSession(sessionId);
+      if (result.valid) {
+        PCU.currentUser = result.user;
+        return true;
+      }
+    } catch (e) {
+      console.warn('Session check failed:', e);
+    }
+
+    // Fallback: try localStorage
     var saved = localStorage.getItem('pcu_current_user');
     if (saved) {
       try {
         PCU.currentUser = JSON.parse(saved);
-        // Verify user still exists in DB
-        var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
-        if (user && user.status === 'approved') {
-          return true;
-        } else {
-          PCU.currentUser = null;
-          localStorage.removeItem('pcu_current_user');
-          return false;
-        }
-      } catch (e) {
-        PCU.currentUser = null;
-        localStorage.removeItem('pcu_current_user');
-        return false;
-      }
+        if (PCU.currentUser && PCU.currentUser.role) return true;
+      } catch (e) {}
     }
+
     return false;
   };
 
@@ -552,10 +555,10 @@
   };
 
   // ─── Init Auth System ────────────────────────────
-  PCU.initAuth = function () {
+  PCU.initAuth = async function () {
     PCU.renderAuthPage();
 
-    if (PCU.checkSession()) {
+    if (await PCU.checkSession()) {
       PCU.hideAuthPage();
       PCU.showMainApp();
       return true;
