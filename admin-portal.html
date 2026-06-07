@@ -42,9 +42,8 @@
             </div>
         </div>
     </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="js/data.js"></script>
-    <script src="js/database.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/admin-portal.js"></script>
     <script>
@@ -63,49 +62,19 @@
         }
 
         async function init() {
-            try {
-                await PCU.initDatabase();
-            } catch(e) {
-                console.warn('DB init error:', e);
-            }
-
-            var user = null;
-
             var sessionId = localStorage.getItem('pcu_session_id');
-            if (sessionId && PCU.dbReady && PCU.db) {
-                var session = PCU.dbGetSession(sessionId);
-                if (session) {
-                    user = PCU.dbGetUserByUserId(session.user_id);
-                }
-            }
-
-            if (!user) {
-                var saved = localStorage.getItem('pcu_current_user');
-                if (saved) {
-                    try {
-                        var parsed = JSON.parse(saved);
-                        if (PCU.dbReady && PCU.db) {
-                            user = PCU.dbGetUserByUserId(parsed.user_id);
-                        } else {
-                            user = parsed;
-                        }
-                    } catch(e) {}
-                }
-            }
-
-            if (!user || user.role !== 'admin') {
+            if (!sessionId) {
                 showLogin();
                 return;
             }
 
-            PCU.currentUser = {
-                id: user.id, user_id: user.user_id, name: user.name,
-                email: user.email, role: user.role, status: user.status,
-                department: user.department || '', specialization: user.specialization || '',
-                course: user.course || '',
-                initials: user.name.split(' ').map(function(n){return n[0];}).join('').substr(0,2).toUpperCase()
-            };
+            var result = await PCU.apiCheckSession(sessionId);
+            if (!result.valid || result.user.role !== 'admin') {
+                showLogin();
+                return;
+            }
 
+            PCU.currentUser = result.user;
             PCU.renderAdminPortal();
 
             document.getElementById('admin-portal-logout-btn').addEventListener('click', function() {

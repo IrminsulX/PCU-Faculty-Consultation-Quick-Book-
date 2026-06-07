@@ -138,7 +138,7 @@
   };
 
   // ─── Register Student ────────────────────────────
-  PCU.registerStudent = function (data) {
+  PCU.registerStudent = async function (data) {
     var studentId = data.studentId.trim();
     var name = data.name.trim();
     var email = data.email.trim().toLowerCase();
@@ -157,26 +157,9 @@
       return { success: false, error: 'Password must be at least 6 characters.' };
     }
 
-    // Check if student ID already exists in users
-    var existing = PCU.dbGetUserByUserId(studentId);
-    if (existing) {
-      return { success: false, error: 'This Student ID is already registered.' };
-    }
-
-    // Check if student ID is blacklisted (was deleted before)
-    if (PCU.dbIsIdBlacklisted('S' + studentId)) {
-      return { success: false, error: 'This Student ID has been previously deleted and cannot be reused.' };
-    }
-
-    // Check if email already exists
-    var existingEmail = PCU.dbGetUserByEmail(email);
-    if (existingEmail) {
-      return { success: false, error: 'This email is already registered.' };
-    }
-
-    // Create user account
+    // Create user account via API
     var userId = 'S' + studentId;
-    PCU.dbAddUser({
+    var result = await PCU.apiCreateUser({
       user_id: userId,
       name: name,
       email: email,
@@ -188,20 +171,16 @@
       course: course
     });
 
-    // Also add to students table for compatibility
-    PCU.dbAddStudent(studentId, name, email, course, '');
-
-    return { success: true };
+    return result;
   };
 
   // ─── Register Faculty ────────────────────────────
-  PCU.registerFaculty = function (data) {
+  PCU.registerFaculty = async function (data) {
     var name = data.name.trim();
     var email = data.email.trim().toLowerCase();
     var password = data.password.trim();
     var department = data.department.trim();
     var specialization = data.specialization.trim();
-    var course = data.course ? data.course.trim() : '';
     var facultyIdInput = data.facultyId ? data.facultyId.trim() : '';
 
     if (!name || !email || !password || !department) {
@@ -212,7 +191,7 @@
     }
 
     // Check if email already exists
-    var existingEmail = PCU.dbGetUserByEmail(email);
+    var existingEmail = await PCU.apiGetUser(email);
     if (existingEmail) {
       return { success: false, error: 'This email is already registered.' };
     }
@@ -220,24 +199,23 @@
     // Use provided faculty ID or generate one
     var facultyId;
     if (facultyIdInput && /^[0-9]{9}$/.test(facultyIdInput)) {
-      // Check if the provided ID already exists
-      var existingId = PCU.dbGetUserByUserId(facultyIdInput);
+      var existingId = await PCU.apiGetUser(facultyIdInput);
       if (existingId) {
         return { success: false, error: 'This Faculty ID is already registered.' };
       }
-      // Check if blacklisted
-      if (PCU.dbIsIdBlacklisted(facultyIdInput)) {
+      var blacklisted = await PCU.apiCheckBlacklist(facultyIdInput);
+      if (blacklisted.blacklisted) {
         return { success: false, error: 'This Faculty ID has been previously deleted and cannot be reused.' };
       }
       facultyId = facultyIdInput;
     } else {
-      // Generate faculty ID
-      var count = PCU.dbGetPendingFacultyCount() + PCU.dbGetApprovedFacultyCount() + 1;
+      var allUsers = await PCU.apiGetAllUsers();
+      var count = allUsers.filter(function(u) { return u.role === 'faculty'; }).length + 1;
       facultyId = 'F' + String(count).padStart(3, '0');
     }
 
     // Create user account with pending status
-    PCU.dbAddUser({
+    var result = await PCU.apiCreateUser({
       user_id: facultyId,
       name: name,
       email: email,
@@ -246,14 +224,17 @@
       status: 'pending',
       department: department,
       specialization: specialization,
-      course: course
+      course: ''
     });
 
-    return { success: true, pending: true };
+    if (result.success) {
+      return { success: true, pending: true };
+    }
+    return result;
   };
 
   // ─── Login ───────────────────────────────────────
-  PCU.login = function (userId, password) {
+  PCU.login = async function (userId, password) {
     userId = userId.trim();
     password = password.trim();
 
@@ -261,69 +242,35 @@
       return { success: false, error: 'Please enter your credentials.' };
     }
 
-    // Try direct lookup first
-    var user = PCU.dbAuthenticateUser(userId, password);
-
-    // If not found and input is 9 digits, try with 'S' prefix (student)
-    if (!user && /^[0-9]{9}$/.test(userId)) {
-      user = PCU.dbAuthenticateUser('S' + userId, password);
-    }
-
-    if (!user) {
-      return { success: false, error: 'Invalid credentials. Please check your ID and password.' };
-    }
-
-    if (user.status === 'pending') {
-      return { success: false, pending: true, error: 'Your account is pending admin approval. Please wait for an administrator to approve your registration.' };
-    }
-
-    if (user.status === 'rejected') {
-      return { success: false, error: 'Your account has been rejected. Please contact the administrator.' };
+    // Use API
+    var result = await PCU.apiLogin(userId, password);
+    if (!result.success) {
+      return result;
     }
 
     // Set current user session
-    PCU.currentUser = {
-      id: user.id,
-      user_id: user.user_id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-      department: user.department || '',
-      specialization: user.specialization || '',
-      course: user.course || '',
-      initials: user.name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
-    };
+    PCU.currentUser = result.user;
+    PCU.sessionId = result.sessionId;
 
-    // Save session to SQLite
-    if (PCU.dbReady && PCU.db) {
-      var sessionId = PCU.dbCreateSession(user.user_id);
-      if (sessionId) {
-        localStorage.setItem('pcu_session_id', sessionId);
-      }
-    }
-    // Also save to localStorage as fallback
+    // Save to localStorage for portal pages
     localStorage.setItem('pcu_current_user', JSON.stringify(PCU.currentUser));
+    localStorage.setItem('pcu_session_id', PCU.sessionId);
 
     return { success: true, user: PCU.currentUser };
   };
 
   // ─── Logout ──────────────────────────────────────
-  PCU.logout = function () {
-    // Delete session from SQLite
+  PCU.logout = async function () {
     var sessionId = localStorage.getItem('pcu_session_id');
-    if (sessionId && PCU.dbReady && PCU.db) {
-      PCU.dbDeleteSession(sessionId);
+    if (sessionId) {
+      await PCU.apiLogout(sessionId);
     }
     PCU.currentUser = null;
+    PCU.sessionId = null;
     localStorage.removeItem('pcu_current_user');
     localStorage.removeItem('pcu_session_id');
     PCU.showAuthPage();
     PCU.hideMainApp();
-    // Close any open portals
-    if (PCU.closePortal) PCU.closePortal();
-    if (PCU.closeFacultyPortal) PCU.closeFacultyPortal();
-    if (PCU.closeAdminPortal) PCU.closeAdminPortal();
   };
 
   // ─── Check Session ───────────────────────────────
@@ -528,7 +475,7 @@
     // Login form
     var loginForm = document.getElementById('auth-login-form');
     if (loginForm) {
-      loginForm.addEventListener('submit', function (e) {
+      loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         var userId = document.getElementById('auth-login-id').value;
         var password = document.getElementById('auth-login-password').value;
@@ -538,7 +485,7 @@
         errorEl.classList.remove('auth-form__error--visible');
         successEl.classList.remove('auth-form__success--visible');
 
-        var result = PCU.login(userId, password);
+        var result = await PCU.login(userId, password);
         if (result.success) {
           successEl.textContent = 'Login successful! Redirecting...';
           successEl.classList.add('auth-form__success--visible');
@@ -557,7 +504,7 @@
     // Register form
     var registerForm = document.getElementById('auth-register-form');
     if (registerForm) {
-      registerForm.addEventListener('submit', function (e) {
+      registerForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         var role = document.querySelector('input[name="reg_role"]:checked').value;
         var name = document.getElementById('reg-name').value;
