@@ -16,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="portal-page">
-    <!-- ========== PORTAL HEADER ========== -->
     <div class="portal-page-header portal-page-header--faculty">
         <div class="portal-page-header__inner">
             <a href="home.html" class="portal-page-header__back">&larr; Back</a>
@@ -28,13 +27,7 @@
             </div>
         </div>
     </div>
-
-    <!-- ========== PORTAL BODY ========== -->
-    <div class="portal-page-body" id="faculty-portal-body">
-        <!-- Filled by faculty-portal.js -->
-    </div>
-
-    <!-- ========== FOOTER ========== -->
+    <div class="portal-page-body" id="faculty-portal-body"></div>
     <footer class="site-footer">
         <div class="site-footer__inner">
             <div class="site-footer__col">
@@ -49,9 +42,9 @@
             </div>
         </div>
     </footer>
-
-    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/database.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/faculty-portal.js"></script>
     <script>
@@ -59,39 +52,77 @@
         'use strict';
         var PCU = window.PCU;
 
-        var saved = localStorage.getItem('pcu_current_user');
-        if (!saved) {
-            document.getElementById('faculty-portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div><h2 class="portal-login__title">Faculty Portal</h2><p class="portal-login__subtitle">Please log in first to access the Faculty Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
-            return;
+        function showLogin() {
+            document.getElementById('faculty-portal-body').innerHTML =
+                '<div class="portal-login">' +
+                    '<div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div>' +
+                    '<h2 class="portal-login__title">Faculty Portal</h2>' +
+                    '<p class="portal-login__subtitle">Please log in first.</p>' +
+                    '<a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a>' +
+                '</div>';
         }
 
-        try {
-            PCU.currentUser = JSON.parse(saved);
-            if (PCU.currentUser.role !== 'faculty') {
-                document.getElementById('faculty-portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div><h2 class="portal-login__title">Faculty Portal</h2><p class="portal-login__subtitle">Please log in as faculty to access this portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+        async function init() {
+            try {
+                await PCU.initDatabase();
+                PCU.loadAllFacultySchedules();
+            } catch(e) {
+                console.warn('DB init error:', e);
+            }
+
+            var user = null;
+
+            var sessionId = localStorage.getItem('pcu_session_id');
+            if (sessionId && PCU.dbReady && PCU.db) {
+                var session = PCU.dbGetSession(sessionId);
+                if (session) {
+                    user = PCU.dbGetUserByUserId(session.user_id);
+                }
+            }
+
+            if (!user) {
+                var saved = localStorage.getItem('pcu_current_user');
+                if (saved) {
+                    try {
+                        var parsed = JSON.parse(saved);
+                        if (PCU.dbReady && PCU.db) {
+                            user = PCU.dbGetUserByUserId(parsed.user_id);
+                        } else {
+                            user = parsed;
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            if (!user || user.role !== 'faculty') {
+                showLogin();
                 return;
             }
-        } catch(e) {
-            document.getElementById('faculty-portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F468;&#x200D;&#x1F3EB;</div><h2 class="portal-login__title">Faculty Portal</h2><p class="portal-login__subtitle">Please log in first to access the Faculty Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
-            return;
+
+            PCU.currentUser = {
+                id: user.id, user_id: user.user_id, name: user.name,
+                email: user.email, role: user.role, status: user.status,
+                department: user.department || '', specialization: user.specialization || '',
+                course: user.course || '',
+                initials: user.name.split(' ').map(function(n){return n[0];}).join('').substr(0,2).toUpperCase()
+            };
+
+            PCU.currentFaculty = {
+                id: user.id, faculty_id: user.user_id, name: user.name,
+                email: user.email, department: user.department || '',
+                specialization: user.specialization || '',
+                initials: user.name.split(' ').map(function(n){return n[0];}).join('').substr(0,2).toUpperCase()
+            };
+
+            PCU.renderFacultyPortal();
+
+            document.getElementById('faculty-portal-logout-btn').addEventListener('click', function() {
+                PCU.logout();
+                window.location.href = 'home.html';
+            });
         }
 
-        PCU.currentFaculty = {
-            id: null,
-            faculty_id: PCU.currentUser.user_id,
-            name: PCU.currentUser.name,
-            email: PCU.currentUser.email,
-            department: PCU.currentUser.department || '',
-            specialization: PCU.currentUser.specialization || '',
-            initials: PCU.currentUser.name.split(' ').map(function(n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
-        };
-
-        PCU.renderFacultyPortal();
-
-        document.getElementById('faculty-portal-logout-btn').addEventListener('click', function() {
-            localStorage.removeItem('pcu_current_user');
-            window.location.href = 'home.html';
-        });
+        init();
     })();
     </script>
 </body>

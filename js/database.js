@@ -119,6 +119,15 @@
         )
       `);
 
+      // Sessions table
+      PCU.db.run(`
+        CREATE TABLE IF NOT EXISTS sessions (
+          session_id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          created_at TEXT DEFAULT (datetime('now'))
+        )
+      `);
+
       // Seed demo admin account
       var userCount = PCU.db.exec("SELECT COUNT(*) FROM users")[0].values[0][0];
       if (userCount === 0) {
@@ -350,6 +359,43 @@
     return results[0].values.map(function (row) {
       return { id: row[0], user_id: row[1], original_role: row[2], deleted_at: row[3] };
     });
+  };
+
+  // ─── Session Functions ────────────────────────────
+  PCU.dbCreateSession = function (userId) {
+    if (!PCU.db) return null;
+    var sessionId = 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
+    try {
+      PCU.db.run("INSERT INTO sessions (session_id, user_id) VALUES (?, ?)", [sessionId, userId]);
+      PCU.saveDatabase();
+      return sessionId;
+    } catch (err) {
+      console.error('Error creating session:', err);
+      return null;
+    }
+  };
+
+  PCU.dbGetSession = function (sessionId) {
+    if (!PCU.db) return null;
+    var stmt = PCU.db.prepare("SELECT * FROM sessions WHERE session_id = ?");
+    stmt.bind([sessionId]);
+    if (stmt.step()) {
+      var row = stmt.getAsObject();
+      stmt.free();
+      return row;
+    }
+    stmt.free();
+    return null;
+  };
+
+  PCU.dbDeleteSession = function (sessionId) {
+    if (!PCU.db) return;
+    try {
+      PCU.db.run("DELETE FROM sessions WHERE session_id = ?", [sessionId]);
+      PCU.saveDatabase();
+    } catch (err) {
+      console.error('Error deleting session:', err);
+    }
   };
 
   PCU.dbAuthenticateUser = function (userId, password) {

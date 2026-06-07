@@ -295,7 +295,14 @@
       initials: user.name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
     };
 
-    // Save session
+    // Save session to SQLite
+    if (PCU.dbReady && PCU.db) {
+      var sessionId = PCU.dbCreateSession(user.user_id);
+      if (sessionId) {
+        localStorage.setItem('pcu_session_id', sessionId);
+      }
+    }
+    // Also save to localStorage as fallback
     localStorage.setItem('pcu_current_user', JSON.stringify(PCU.currentUser));
 
     return { success: true, user: PCU.currentUser };
@@ -303,8 +310,14 @@
 
   // ─── Logout ──────────────────────────────────────
   PCU.logout = function () {
+    // Delete session from SQLite
+    var sessionId = localStorage.getItem('pcu_session_id');
+    if (sessionId && PCU.dbReady && PCU.db) {
+      PCU.dbDeleteSession(sessionId);
+    }
     PCU.currentUser = null;
     localStorage.removeItem('pcu_current_user');
+    localStorage.removeItem('pcu_session_id');
     PCU.showAuthPage();
     PCU.hideMainApp();
     // Close any open portals
