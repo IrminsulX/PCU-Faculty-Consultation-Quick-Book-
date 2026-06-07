@@ -50,75 +50,40 @@
     </footer>
 
     <!-- ========== SCRIPTS ========== -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <script src="js/data.js"></script>
-    <script src="js/database.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/notifications.js"></script>
     <script src="js/portal.js"></script>
     <script>
     (function() {
         'use strict';
         var PCU = window.PCU;
 
-        async function init() {
-            // Try to init database, but don't fail if it doesn't work
-            try {
-                await PCU.initDatabase();
-                PCU.loadAllFacultySchedules();
-            } catch(e) {
-                console.warn('Database init failed, using localStorage only:', e);
-            }
-
-            // Check session from localStorage
-            var saved = localStorage.getItem('pcu_current_user');
-            if (!saved) {
-                showLoginPrompt();
-                return;
-            }
-
-            try {
-                PCU.currentUser = JSON.parse(saved);
-            } catch(e) {
-                showLoginPrompt();
-                return;
-            }
-
-            // If DB is ready, verify user exists; otherwise trust localStorage
-            if (PCU.dbReady && PCU.db) {
-                var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
-                if (!user || user.status !== 'approved' || user.role !== 'student') {
-                    showLoginPrompt();
-                    return;
-                }
-            } else {
-                // DB not ready, trust localStorage but check role
-                if (PCU.currentUser.role !== 'student') {
-                    showLoginPrompt();
-                    return;
-                }
-            }
-
-            // User is authenticated
-            PCU.autoLoginStudent();
-            PCU.renderPortal();
+        // Simple auth check - just read localStorage
+        var saved = localStorage.getItem('pcu_current_user');
+        if (!saved) {
+            document.getElementById('portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in first to access the Student Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+            return;
         }
 
-        function showLoginPrompt() {
-            var body = document.getElementById('portal-body');
-            body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in first to access the Student Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+        try {
+            PCU.currentUser = JSON.parse(saved);
+            if (PCU.currentUser.role !== 'student') {
+                document.getElementById('portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in as a student to access this portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+                return;
+            }
+        } catch(e) {
+            document.getElementById('portal-body').innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F393;</div><h2 class="portal-login__title">Student Portal</h2><p class="portal-login__subtitle">Please log in first to access the Student Portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+            return;
         }
+
+        // User is logged in as student - show portal
+        PCU.autoLoginStudent();
+        PCU.renderPortal();
 
         document.getElementById('portal-logout-btn').addEventListener('click', function() {
             localStorage.removeItem('pcu_current_user');
             window.location.href = 'home.html';
         });
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
     })();
     </script>
 </body>
