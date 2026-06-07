@@ -84,22 +84,31 @@
     if (dateInput) dateInput.min = ts;
     if (modalDate) modalDate.min = ts;
 
-    // Student Portal link
+    // Student Portal link - now navigates to separate page
     var portalLink = document.getElementById('portal-link');
     if (portalLink) {
-      portalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openPortal(); });
+      portalLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = 'student-portal.html';
+      });
     }
 
-    // Faculty Portal link
+    // Faculty Portal link - now navigates to separate page
     var facultyPortalLink = document.getElementById('faculty-portal-link');
     if (facultyPortalLink) {
-      facultyPortalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openFacultyPortal(); });
+      facultyPortalLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = 'faculty-portal.html';
+      });
     }
 
-    // Admin Portal link
+    // Admin Portal link - now navigates to separate page
     var adminPortalLink = document.getElementById('admin-portal-link');
     if (adminPortalLink) {
-      adminPortalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openAdminPortal(); });
+      adminPortalLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = 'admin-portal.html';
+      });
     }
 
     // Logout link
@@ -129,48 +138,9 @@
       }
     });
 
-    // Portal close
-    var portalClose = document.getElementById('portal-close');
-    if (portalClose) portalClose.addEventListener('click', PCU.closePortal);
-
-    // Portal logout
-    var logoutBtn = document.getElementById('portal-logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', PCU.logoutStudent);
-
-    // Faculty Portal close
-    var facultyPortalClose = document.getElementById('faculty-portal-close');
-    if (facultyPortalClose) facultyPortalClose.addEventListener('click', PCU.closeFacultyPortal);
-
-    // Faculty Portal logout
-    var facultyLogoutBtn = document.getElementById('faculty-portal-logout-btn');
-    if (facultyLogoutBtn) facultyLogoutBtn.addEventListener('click', PCU.logoutFaculty);
-
-    // Admin Portal close
-    var adminPortalClose = document.getElementById('admin-portal-close');
-    if (adminPortalClose) adminPortalClose.addEventListener('click', PCU.closeAdminPortal);
-
-    // Admin Portal logout
-    var adminLogoutBtn = document.getElementById('admin-portal-logout-btn');
-    if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', function () { PCU.logout(); });
-
-    // Escape key — close modals, portal, help desk
+    // Escape key — close modals, help desk
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        var portalOverlay = document.getElementById('portal-overlay');
-        if (portalOverlay && portalOverlay.classList.contains('portal-overlay--open')) {
-          PCU.closePortal();
-          return;
-        }
-        var facultyPortalOverlay = document.getElementById('faculty-portal-overlay');
-        if (facultyPortalOverlay && facultyPortalOverlay.classList.contains('portal-overlay--open')) {
-          PCU.closeFacultyPortal();
-          return;
-        }
-        var adminPortalOverlay = document.getElementById('admin-portal-overlay');
-        if (adminPortalOverlay && adminPortalOverlay.classList.contains('admin-portal-overlay--open')) {
-          PCU.closeAdminPortal();
-          return;
-        }
         var hdPanel = document.getElementById('helpdesk-panel');
         if (hdPanel && hdPanel.classList.contains('helpdesk-panel--open')) {
           hdPanel.classList.remove('helpdesk-panel--open');

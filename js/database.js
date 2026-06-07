@@ -109,6 +109,16 @@
         )
       `);
 
+      // Blacklist table for deleted IDs (prevents reuse)
+      PCU.db.run(`
+        CREATE TABLE IF NOT EXISTS id_blacklist (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT UNIQUE NOT NULL,
+          original_role TEXT DEFAULT '',
+          deleted_at TEXT DEFAULT (datetime('now'))
+        )
+      `);
+
       // Seed demo admin account
       var userCount = PCU.db.exec("SELECT COUNT(*) FROM users")[0].values[0][0];
       if (userCount === 0) {
@@ -302,6 +312,14 @@
   PCU.dbDeleteUser = function (userId) {
     if (!PCU.db) return false;
     try {
+      // Get the user's role before deleting
+      var user = PCU.dbGetUserByUserId(userId);
+      var role = user ? user.role : '';
+
+      // Blacklist the ID first (prevents reuse)
+      PCU.db.run("INSERT OR IGNORE INTO id_blacklist (user_id, original_role) VALUES (?, ?)", [userId, role]);
+
+      // Now delete the user
       PCU.db.run("DELETE FROM users WHERE user_id = ?", [userId]);
       PCU.saveDatabase();
       return true;
@@ -309,6 +327,29 @@
       console.error('Error deleting user:', err);
       return false;
     }
+  };
+
+  // ─── Blacklist Functions ──────────────────────────
+  PCU.dbIsIdBlacklisted = function (userId) {
+    if (!PCU.db) return false;
+    var stmt = PCU.db.prepare("SELECT COUNT(*) as count FROM id_blacklist WHERE user_id = ?");
+    stmt.bind([userId]);
+    if (stmt.step()) {
+      var result = stmt.getAsObject();
+      stmt.free();
+      return result.count > 0;
+    }
+    stmt.free();
+    return false;
+  };
+
+  PCU.dbGetBlacklistedIds = function () {
+    if (!PCU.db) return [];
+    var results = PCU.db.exec("SELECT * FROM id_blacklist ORDER BY deleted_at DESC");
+    if (results.length === 0) return [];
+    return results[0].values.map(function (row) {
+      return { id: row[0], user_id: row[1], original_role: row[2], deleted_at: row[3] };
+    });
   };
 
   PCU.dbAuthenticateUser = function (userId, password) {

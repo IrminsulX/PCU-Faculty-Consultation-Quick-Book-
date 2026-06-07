@@ -36,9 +36,9 @@
                 <span class="top-bar__toggle-bar"></span>
             </button>
             <nav class="top-bar__nav" id="top-bar-nav">
-                <a href="#" class="top-bar__link" id="admin-portal-link" style="display:none;">Admin Portal</a>
-                <a href="#" class="top-bar__link" id="portal-link">Student Portal</a>
-                <a href="#" class="top-bar__link" id="faculty-portal-link">Faculty Portal</a>
+                <a href="admin-portal.html" class="top-bar__link" id="admin-portal-link" style="display:none;">Admin Portal</a>
+                <a href="student-portal.html" class="top-bar__link" id="portal-link">Student Portal</a>
+                <a href="faculty-portal.html" class="top-bar__link" id="faculty-portal-link">Faculty Portal</a>
                 <a href="#" class="top-bar__link top-bar__link--active">Faculty Directory</a>
                 <a href="#" class="top-bar__link" id="helpdesk-link">Help Desk</a>
                 <a href="#" class="top-bar__link" id="logout-link" style="display:none;">Logout</a>
@@ -90,51 +90,6 @@
             <!-- Filled by helpdesk.js -->
         </div>
     </aside>
-
-    <!-- ========== STUDENT PORTAL OVERLAY ========== -->
-    <div class="portal-overlay" id="portal-overlay">
-        <div class="portal-header">
-            <h2 class="portal-header__title">&#x1F393; Student Portal</h2>
-            <div class="portal-header__actions">
-                <span class="portal-header__user" id="portal-header-user"></span>
-                <button class="portal-logout-btn" id="portal-logout-btn" style="display:none;">Logout</button>
-                <button class="portal-close-btn" id="portal-close">&times;</button>
-            </div>
-        </div>
-        <div class="portal-body" id="portal-body">
-            <!-- Filled by portal.js -->
-        </div>
-    </div>
-
-    <!-- ========== FACULTY PORTAL OVERLAY ========== -->
-    <div class="portal-overlay faculty-portal-overlay" id="faculty-portal-overlay">
-        <div class="portal-header faculty-portal-header">
-            <h2 class="portal-header__title">&#x1F468;&#x200D;&#x1F3EB; Faculty Portal</h2>
-            <div class="portal-header__actions">
-                <span class="portal-header__user" id="faculty-portal-header-user"></span>
-                <button class="portal-logout-btn" id="faculty-portal-logout-btn" style="display:none;">Logout</button>
-                <button class="portal-close-btn" id="faculty-portal-close">&times;</button>
-            </div>
-        </div>
-        <div class="portal-body" id="faculty-portal-body">
-            <!-- Filled by faculty-portal.js -->
-        </div>
-    </div>
-
-    <!-- ========== ADMIN PORTAL OVERLAY ========== -->
-    <div class="portal-overlay admin-portal-overlay" id="admin-portal-overlay">
-        <div class="portal-header admin-portal-header">
-            <h2 class="portal-header__title">&#x1F6E1;&#xFE0F; Admin Portal</h2>
-            <div class="portal-header__actions">
-                <span class="portal-header__user" id="admin-portal-header-user"></span>
-                <button class="portal-logout-btn" id="admin-portal-logout-btn" style="display:none;">Logout</button>
-                <button class="portal-close-btn" id="admin-portal-close">&times;</button>
-            </div>
-        </div>
-        <div class="portal-body" id="admin-portal-body">
-            <!-- Filled by admin-portal.js -->
-        </div>
-    </div>
 
     <!-- ========== PAGE TITLE & BREADCRUMB ========== -->
     <div class="page-title-bar">
@@ -306,7 +261,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="student-id" class="form-label">Student ID Number <span class="required-star">*</span></label>
-                                    <input type="text" id="student-id" name="student_id" class="form-input" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}">
+                                    <input type="text" id="student-id" name="student_id" class="form-input" placeholder="e.g., 20223294" required maxlength="9" pattern="[0-9]{9}">
                                 </div>
                             </div>
                             <div class="form-row form-row--two-col">
@@ -476,7 +431,7 @@
                         </div>
                         <div class="modal-form__group">
                             <label for="modal-student-id" class="modal-form__label">Student ID <span class="required-star">*</span></label>
-                            <input type="text" id="modal-student-id" class="modal-form__input" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}">
+                            <input type="text" id="modal-student-id" class="modal-form__input" placeholder="e.g., 20223294" required maxlength="9" pattern="[0-9]{9}">
                         </div>
                     </div>
                     <div class="modal-form__group">

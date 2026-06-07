@@ -9,14 +9,20 @@
 
   // ─── Admin Portal Open / Close ───────────────────
   PCU.openAdminPortal = function () {
-    document.getElementById('admin-portal-overlay').classList.add('admin-portal-overlay--open');
-    document.body.style.overflow = 'hidden';
+    var overlay = document.getElementById('admin-portal-overlay');
+    if (overlay) {
+      overlay.classList.add('admin-portal-overlay--open');
+      document.body.style.overflow = 'hidden';
+    }
     PCU.renderAdminPortal();
   };
 
   PCU.closeAdminPortal = function () {
-    document.getElementById('admin-portal-overlay').classList.remove('admin-portal-overlay--open');
-    document.body.style.overflow = '';
+    var overlay = document.getElementById('admin-portal-overlay');
+    if (overlay) {
+      overlay.classList.remove('admin-portal-overlay--open');
+      document.body.style.overflow = '';
+    }
   };
 
   // ─── Render Admin Portal ─────────────────────────

@@ -9,14 +9,20 @@
 
   // ─── Portal Open / Close ──────────────────────────
   PCU.openPortal = function () {
-    document.getElementById('portal-overlay').classList.add('portal-overlay--open');
-    document.body.style.overflow = 'hidden';
+    var overlay = document.getElementById('portal-overlay');
+    if (overlay) {
+      overlay.classList.add('portal-overlay--open');
+      document.body.style.overflow = 'hidden';
+    }
     PCU.renderPortal();
   };
 
   PCU.closePortal = function () {
-    document.getElementById('portal-overlay').classList.remove('portal-overlay--open');
-    document.body.style.overflow = '';
+    var overlay = document.getElementById('portal-overlay');
+    if (overlay) {
+      overlay.classList.remove('portal-overlay--open');
+      document.body.style.overflow = '';
+    }
   };
 
   // ─── Login ─────────────────────────────────────────
@@ -24,8 +30,8 @@
     studentId = studentId.trim(); email = email.trim().toLowerCase();
     if (!studentId || !email) return false;
 
-    // Validate Student ID format (10 digits)
-    if (!/^[0-9]{10}$/.test(studentId)) return false;
+    // Validate Student ID format (9 digits)
+    if (!/^[0-9]{9}$/.test(studentId)) return false;
 
     // Find all bookings matching this student (from localStorage)
     var matches = PCU.bookings.filter(function (b) {
@@ -147,7 +153,7 @@
         '<p class="portal-login__subtitle">Enter your credentials to view your consultations.</p>' +
         '<form class="portal-login__form" id="portal-login-form">' +
           '<label class="portal-login__label">Student ID Number</label>' +
-          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}" value="' + prefilledId + '">' +
+          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 20223294" required maxlength="9" pattern="[0-9]{9}" value="' + prefilledId + '">' +
           '<label class="portal-login__label">Email Address</label>' +
           '<input type="email" class="portal-login__input" id="portal-login-email" placeholder="your.email@pcu.edu.ph" required value="' + prefilledEmail + '">' +
           '<p class="portal-login__error" id="portal-login-error">No matching student found. Check your ID and email.</p>' +

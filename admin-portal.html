@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCU Admin Portal</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/portal.css">
+    <link rel="stylesheet" href="css/admin-portal.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="portal-page">
+    <!-- ========== PORTAL HEADER ========== -->
+    <div class="portal-page-header portal-page-header--admin">
+        <div class="portal-page-header__inner">
+            <a href="home.html" class="portal-page-header__back">&larr; Back to Quick-Book</a>
+            <h1 class="portal-page-header__title">&#x1F6E1;&#xFE0F; Admin Portal</h1>
+            <div class="portal-page-header__actions">
+                <span class="portal-page-header__user" id="admin-portal-header-user"></span>
+                <button class="portal-logout-btn" id="admin-portal-logout-btn" style="display:none;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== PORTAL BODY ========== -->
+    <div class="portal-page-body" id="admin-portal-body">
+        <!-- Filled by admin-portal.js -->
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <div class="site-footer__col">
+                <p class="site-footer__uni">Philippine Christian University</p>
+                <p class="site-footer__addr">1648 Taft Avenue, Malate, Manila, Philippines 1004</p>
+            </div>
+            <div class="site-footer__col site-footer__col--center">
+                <p class="site-footer__tagline">Faith &middot; Excellence &middot; Service</p>
+            </div>
+            <div class="site-footer__col site-footer__col--right">
+                <p class="site-footer__copy">&copy; 2026 PCU Faculty Consultation System</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========== SCRIPTS ========== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/admin-portal.js"></script>
+    <script>
+    (function() {
+        'use strict';
+        var PCU = window.PCU;
+
+        function checkAuth() {
+            var saved = localStorage.getItem('pcu_current_user');
+            if (saved) {
+                try {
+                    PCU.currentUser = JSON.parse(saved);
+                    if (PCU.currentUser.role === 'admin') return true;
+                } catch(e) {}
+            }
+            return false;
+        }
+
+        async function init() {
+            try {
+                await PCU.initDatabase();
+                PCU.loadAllFacultySchedules();
+            } catch(e) {}
+
+            if (checkAuth()) {
+                PCU.renderAdminPortal();
+            } else {
+                var body = document.getElementById('admin-portal-body');
+                body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F6E1;&#xFE0F;</div><h2 class="portal-login__title">Admin Portal</h2><p class="portal-login__subtitle">Please log in as admin to access this portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
+            }
+
+            document.getElementById('admin-portal-logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('pcu_current_user');
+                window.location.href = 'home.html';
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

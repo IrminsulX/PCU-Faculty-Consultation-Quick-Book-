@@ -12,14 +12,20 @@
 
   // ─── Portal Open / Close ─────────────────────────
   PCU.openFacultyPortal = function () {
-    document.getElementById('faculty-portal-overlay').classList.add('portal-overlay--open');
-    document.body.style.overflow = 'hidden';
+    var overlay = document.getElementById('faculty-portal-overlay');
+    if (overlay) {
+      overlay.classList.add('portal-overlay--open');
+      document.body.style.overflow = 'hidden';
+    }
     PCU.renderFacultyPortal();
   };
 
   PCU.closeFacultyPortal = function () {
-    document.getElementById('faculty-portal-overlay').classList.remove('portal-overlay--open');
-    document.body.style.overflow = '';
+    var overlay = document.getElementById('faculty-portal-overlay');
+    if (overlay) {
+      overlay.classList.remove('portal-overlay--open');
+      document.body.style.overflow = '';
+    }
   };
 
   // ─── Faculty Login ───────────────────────────────

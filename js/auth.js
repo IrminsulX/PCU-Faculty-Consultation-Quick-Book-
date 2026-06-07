@@ -146,9 +146,9 @@
     var department = data.department.trim();
     var course = data.course.trim();
 
-    // Validate 10-digit ID
-    if (!/^[0-9]{10}$/.test(studentId)) {
-      return { success: false, error: 'Student ID must be exactly 10 digits.' };
+    // Validate 9-digit ID
+    if (!/^[0-9]{9}$/.test(studentId)) {
+      return { success: false, error: 'Student ID must be exactly 9 digits.' };
     }
     if (!name || !email || !password || !department || !course) {
       return { success: false, error: 'Please fill all required fields.' };
@@ -161,6 +161,11 @@
     var existing = PCU.dbGetUserByUserId(studentId);
     if (existing) {
       return { success: false, error: 'This Student ID is already registered.' };
+    }
+
+    // Check if student ID is blacklisted (was deleted before)
+    if (PCU.dbIsIdBlacklisted('S' + studentId)) {
+      return { success: false, error: 'This Student ID has been previously deleted and cannot be reused.' };
     }
 
     // Check if email already exists
@@ -214,11 +219,15 @@
 
     // Use provided faculty ID or generate one
     var facultyId;
-    if (facultyIdInput && /^[0-9]{10}$/.test(facultyIdInput)) {
+    if (facultyIdInput && /^[0-9]{9}$/.test(facultyIdInput)) {
       // Check if the provided ID already exists
       var existingId = PCU.dbGetUserByUserId(facultyIdInput);
       if (existingId) {
         return { success: false, error: 'This Faculty ID is already registered.' };
+      }
+      // Check if blacklisted
+      if (PCU.dbIsIdBlacklisted(facultyIdInput)) {
+        return { success: false, error: 'This Faculty ID has been previously deleted and cannot be reused.' };
       }
       facultyId = facultyIdInput;
     } else {
@@ -255,8 +264,8 @@
     // Try direct lookup first
     var user = PCU.dbAuthenticateUser(userId, password);
 
-    // If not found and input is 10 digits, try with 'S' prefix (student)
-    if (!user && /^[0-9]{10}$/.test(userId)) {
+    // If not found and input is 9 digits, try with 'S' prefix (student)
+    if (!user && /^[0-9]{9}$/.test(userId)) {
       user = PCU.dbAuthenticateUser('S' + userId, password);
     }
 
@@ -412,7 +421,7 @@
               '<div class="student-fields" id="reg-student-fields">' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Student ID *</label>' +
-                  '<input type="text" class="auth-form__input" id="reg-student-id" placeholder="e.g., 202232946" maxlength="10" pattern="[0-9]{10}">' +
+                  '<input type="text" class="auth-form__input" id="reg-student-id" placeholder="e.g., 20223294" maxlength="9" pattern="[0-9]{9}">' +
                 '</div>' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Department *</label>' +
@@ -441,7 +450,7 @@
               '<div class="auth-faculty-fields" id="reg-faculty-fields">' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Faculty ID *</label>' +
-                  '<input type="text" class="auth-form__input" id="reg-faculty-id" placeholder="e.g., 2019001234" maxlength="10" pattern="[0-9]{10}">' +
+                  '<input type="text" class="auth-form__input" id="reg-faculty-id" placeholder="e.g., 201900123" maxlength="9" pattern="[0-9]{9}">' +
                 '</div>' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Department *</label>' +
