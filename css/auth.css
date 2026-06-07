@@ -42,10 +42,18 @@
 }
 
 /* Auth Container */
-.auth-container {
+.auth-split {
+    display: flex;
+    gap: 2rem;
     width: 100%;
-    max-width: 460px;
+    max-width: 900px;
     margin: 0 auto;
+    align-items: flex-start;
+}
+
+.auth-card {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Auth Card */
@@ -61,6 +69,10 @@
     background: var(--pc-maroon);
     padding: 2rem 2rem 1.5rem;
     text-align: center;
+}
+
+.auth-card__header--register {
+    background: linear-gradient(135deg, #1a3a5c 0%, var(--pc-maroon-dark) 100%);
 }
 
 .auth-card__logo {
@@ -82,6 +94,15 @@
 .auth-card__subtitle {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-card__section-title {
+    font-family: var(--font-accent);
+    font-size: 1.15rem;
+    color: var(--pc-maroon);
+    margin-bottom: 0.3rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--pc-border);
 }
 
 /* Auth Tabs */

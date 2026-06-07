@@ -38,17 +38,9 @@
     document.querySelector('.site-footer').style.display = 'none';
   };
 
-  // ─── Switch Auth Tab ─────────────────────────────
+  // ─── Switch Auth Tab (no-op, kept for compatibility) ──
   PCU.switchAuthTab = function (tab) {
-    document.querySelectorAll('.auth-tab').forEach(function (t) {
-      t.classList.toggle('auth-tab--active', t.getAttribute('data-auth-tab') === tab);
-    });
-    document.querySelectorAll('.auth-form').forEach(function (f) {
-      f.classList.toggle('auth-form--hidden', f.getAttribute('data-auth-form') !== tab);
-    });
-    // Clear errors
-    document.querySelectorAll('.auth-form__error').forEach(function (e) { e.classList.remove('auth-form__error--visible'); });
-    document.querySelectorAll('.auth-form__success').forEach(function (e) { e.classList.remove('auth-form__success--visible'); });
+    // No longer needed - login and register are separate cards
   };
 
   // ─── Department-Course Mapping ────────────────────
@@ -321,19 +313,17 @@
     if (!authPage) return;
 
     authPage.innerHTML =
-      '<div class="auth-container">' +
-        '<div class="auth-card">' +
+      '<div class="auth-split">' +
+
+        // ── LOGIN CARD ──
+        '<div class="auth-card auth-card--login">' +
           '<div class="auth-card__header">' +
             '<img src="images/pcu-logo.png" alt="PCU Logo" class="auth-card__logo" onerror="this.style.display=\'none\'">' +
             '<h1 class="auth-card__title">PCU Quick-Book</h1>' +
             '<p class="auth-card__subtitle">Faculty Consultation Booking System</p>' +
           '</div>' +
-          '<div class="auth-tabs">' +
-            '<button class="auth-tab auth-tab--active" data-auth-tab="login">Sign In</button>' +
-            '<button class="auth-tab" data-auth-tab="register">Register</button>' +
-          '</div>' +
           '<div class="auth-card__body">' +
-            // Login Form
+            '<h2 class="auth-card__section-title">Sign In</h2>' +
             '<form class="auth-form" data-auth-form="login" id="auth-login-form">' +
               '<div class="auth-form__group">' +
                 '<label class="auth-form__label">User ID</label>' +
@@ -348,8 +338,20 @@
               '<button type="submit" class="auth-form__submit">Sign In</button>' +
               '<div class="auth-divider"><span class="auth-divider__text">Demo: admin / admin123</span></div>' +
             '</form>' +
-            // Register Form
-            '<form class="auth-form auth-form--hidden" data-auth-form="register" id="auth-register-form">' +
+          '</div>' +
+          '<div class="auth-card__footer">' +
+            '<p class="auth-card__footer-text">Philippine Christian University &mdash; Faculty Consultation System</p>' +
+          '</div>' +
+        '</div>' +
+
+        // ── REGISTER CARD ──
+        '<div class="auth-card auth-card--register">' +
+          '<div class="auth-card__header auth-card__header--register">' +
+            '<h1 class="auth-card__title">Create Account</h1>' +
+            '<p class="auth-card__subtitle">Join the consultation booking system</p>' +
+          '</div>' +
+          '<div class="auth-card__body">' +
+            '<form class="auth-form" data-auth-form="register" id="auth-register-form">' +
               '<div class="auth-role-select">' +
                 '<label class="auth-role-option">' +
                   '<input type="radio" name="reg_role" value="student" class="auth-role-option__radio" checked>' +
@@ -438,13 +440,14 @@
               '</div>' +
               '<div class="auth-form__error" id="auth-register-error"></div>' +
               '<div class="auth-form__success" id="auth-register-success"></div>' +
-              '<button type="submit" class="auth-form__submit">Create Account</button>' +
+              '<button type="submit" class="auth-form__submit auth-form__submit--register">Create Account</button>' +
             '</form>' +
           '</div>' +
           '<div class="auth-card__footer">' +
-            '<p class="auth-card__footer-text">Philippine Christian University &mdash; Faculty Consultation System</p>' +
+            '<p class="auth-card__footer-text">Faculty accounts require admin approval</p>' +
           '</div>' +
         '</div>' +
+
       '</div>';
 
     // Attach event listeners
@@ -453,13 +456,6 @@
 
   // ─── Attach Auth Event Listeners ─────────────────
   PCU.attachAuthListeners = function () {
-    // Tab switching
-    document.querySelectorAll('.auth-tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        PCU.switchAuthTab(this.getAttribute('data-auth-tab'));
-      });
-    });
-
     // Role selection
     document.querySelectorAll('input[name="reg_role"]').forEach(function (radio) {
       radio.addEventListener('change', function () {
@@ -544,8 +540,6 @@
           document.querySelector('input[name="reg_role"][value="student"]').checked = true;
           PCU.toggleRoleFields('student');
           PCU.updateCourseOptions('');
-          // Switch to login tab after delay
-          setTimeout(function () { PCU.switchAuthTab('login'); }, 2000);
         } else {
           errorEl.textContent = result.error;
           errorEl.classList.add('auth-form__error--visible');
