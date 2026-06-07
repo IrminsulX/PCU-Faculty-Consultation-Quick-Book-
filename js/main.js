@@ -157,9 +157,11 @@
     var portalLink = document.getElementById('portal-link');
     var facultyLink = document.getElementById('faculty-portal-link');
     var logoutLink = document.getElementById('logout-link');
+    var signInLink = document.getElementById('signin-link');
 
     if (PCU.currentUser) {
       if (logoutLink) logoutLink.style.display = '';
+      if (signInLink) signInLink.style.display = 'none';
 
       // Hide all portal links by default, then show only the relevant ones
       if (adminLink) adminLink.style.display = 'none';
@@ -178,11 +180,12 @@
           break;
       }
     } else {
-      // Not logged in: show Student and Faculty portals only
+      // Not logged in: show Sign In, hide portal links
       if (adminLink) adminLink.style.display = 'none';
-      if (portalLink) portalLink.style.display = '';
-      if (facultyLink) facultyLink.style.display = '';
+      if (portalLink) portalLink.style.display = 'none';
+      if (facultyLink) facultyLink.style.display = 'none';
       if (logoutLink) logoutLink.style.display = 'none';
+      if (signInLink) signInLink.style.display = '';
     }
   }
 

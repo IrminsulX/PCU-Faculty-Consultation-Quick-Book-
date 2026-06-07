@@ -22,7 +22,6 @@
 
     .portal-login { margin: 2rem 1rem; padding: 1.5rem; }
     .portal-student-card { flex-direction: column; text-align: center; }
-    .auth-split { flex-direction: column; max-width: 460px; }
 }
 
 @media (max-width: 600px) {
