@@ -5,21 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCU Faculty Consultation | Quick-Book</title>
     <link rel="icon" type="image/png" href="images/pcu-logo.png">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/directory.css">
-    <link rel="stylesheet" href="css/modal.css">
-    <link rel="stylesheet" href="css/notifications.css">
-    <link rel="stylesheet" href="css/portal.css">
-    <link rel="stylesheet" href="css/helpdesk.css">
-    <link rel="stylesheet" href="css/faculty-portal.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/admin-portal.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/base.css?v=2">
+    <link rel="stylesheet" href="css/layout.css?v=2">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <link rel="stylesheet" href="css/directory.css?v=2">
+    <link rel="stylesheet" href="css/modal.css?v=2">
+    <link rel="stylesheet" href="css/notifications.css?v=2">
+    <link rel="stylesheet" href="css/portal.css?v=2">
+    <link rel="stylesheet" href="css/helpdesk.css?v=2">
+    <link rel="stylesheet" href="css/faculty-portal.css?v=2">
+    <link rel="stylesheet" href="css/auth.css?v=2">
+    <link rel="stylesheet" href="css/admin-portal.css?v=2">
+    <link rel="stylesheet" href="css/responsive.css?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @media (max-width: 900px) {
+            .form-row--two-col {
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+            }
+            .form-row--two-col > .form-group {
+                flex: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+        @media (max-width: 600px) {
+            .brand-header__shield {
+                width: 50px;
+                height: 50px;
+                font-size: 1.4rem;
+            }
+            .brand-header__logo-area {
+                gap: 0.7rem;
+            }
+            .form-row--date-row {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.5rem !important;
+            }
+            .form-row--date-row > .form-group {
+                flex: none !important;
+                width: 100% !important;
+            }
+            .form-group--date-hint {
+                padding-bottom: 0 !important;
+            }
+            .date-hint {
+                font-size: 0.78rem;
+                padding: 0.35rem 0.6rem;
+                white-space: normal;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- ========== TOP NAVIGATION BAR ========== -->
@@ -105,6 +145,14 @@
 
     <!-- ========== MAIN CONTENT AREA ========== -->
     <main class="main-container">
+        <!-- PENDING APPROVAL BANNER (shown for faculty awaiting approval) -->
+        <div class="pending-banner" id="pending-approval-banner" style="display:none; margin:0 auto 1.2rem; max-width:1100px; background:linear-gradient(135deg,#d4a017,#b8860b); color:#fff; padding:0.9rem 1.4rem; border-radius:10px; align-items:center; gap:0.8rem; font-size:0.92rem; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            <span style="font-size:1.4rem;">&#x23F3;</span>
+            <div>
+                <strong>Your account is pending admin approval.</strong>
+                You can browse the Faculty Directory, but booking is unavailable until an administrator approves your account.
+            </div>
+        </div>
         <div class="main-container__inner">
 
             <!-- ===== SIDEBAR (LEFT COLUMN) ===== -->

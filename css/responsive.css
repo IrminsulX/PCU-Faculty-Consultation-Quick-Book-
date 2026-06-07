@@ -2,34 +2,143 @@
    PCU Quick-Book — Responsive
    ============================================ */
 
+/* ─── Tablet (≤ 900px) ─────────────────────── */
 @media (max-width: 900px) {
     .main-container__inner { grid-template-columns: 1fr; }
     .sidebar { order: 2; }
     .tab-panel { padding: 1.2rem; }
     .brand-header__uni { font-size: 1.4rem; }
     .page-title { font-size: 2rem; }
-    .form-row--two-col { flex-direction: column; gap: 1rem; }
+    .form-row--two-col { flex-direction: column !important; gap: 1rem; }
+    .form-row--two-col > .form-group { flex: 0 0 100% !important; max-width: 100% !important; }
     .mode-toggle-group { flex-direction: column; }
     .directory-grid { grid-template-columns: 1fr; }
 
+    /* Modal → bottom sheet */
     .modal__dialog {
         width: 100%; max-width: 100%;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         position: fixed; bottom: 0; left: 0; max-height: 85vh;
     }
+    .modal__header { padding: 1rem 1.2rem; }
+    .modal__body { padding: 1.2rem; }
+    .modal__close { padding: 0.3rem 0.5rem; }
+
+    /* Notification panel */
     .notif-panel { width: 100%; max-width: 100%; }
     .notif-panel:not(.notif-panel--open) { right: -100%; }
 
+    /* Helpdesk panel */
+    .helpdesk-panel { width: 100%; max-width: 100%; }
+    .helpdesk-panel:not(.helpdesk-panel--open) { right: -100%; }
+
+    /* Portal overlay login */
     .portal-login { margin: 2rem 1rem; padding: 1.5rem; }
     .portal-student-card { flex-direction: column; text-align: center; }
+
+    /* Faculty schedule items */
+    .faculty-schedule__item { flex-wrap: wrap; gap: 0.8rem; }
+    .faculty-schedule__day { min-width: auto; }
+
+    /* Admin section headers */
+    .admin-section__header { flex-wrap: wrap; gap: 0.5rem; }
 }
 
+/* ─── Mobile (≤ 600px) ─────────────────────── */
 @media (max-width: 600px) {
+    /* Brand header */
     .brand-header__inner { flex-direction: column; align-items: flex-start; }
+    .brand-header__uni { font-size: 1.2rem; }
+
+    /* Page title & container padding */
+    .page-title { font-size: 1.6rem; }
+    .page-title-bar__inner { padding: 0 1rem; }
+    .main-container__inner { padding: 0 1rem; }
+
+    /* Tabs */
     .tab-nav { flex-direction: column; }
+
+    /* Form actions */
     .form-actions { justify-content: stretch; }
     .btn { width: 100%; }
+
+    /* Time slots */
     .time-slot-grid { justify-content: center; }
+
+    /* Directory */
     .directory-grid { grid-template-columns: 1fr; }
+
+    /* Portal dashboard */
     .portal-dashboard { padding: 1rem; }
+
+    /* Portal page header */
+    .portal-page-header__inner {
+        flex-wrap: wrap;
+        padding: 0.6rem 1rem;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .portal-page-header__title {
+        flex: 1 1 auto;
+        min-width: 0;
+        order: 2;
+    }
+    .portal-page-header__actions {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-left: auto;
+        order: 3;
+    }
+    .portal-page-header__user {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    .portal-logout-btn {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.78rem;
+    }
+    .portal-page-body { padding: 1rem; }
+
+    /* Portal booking cards — stack on mobile */
+    .portal-booking-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .portal-booking-status { align-self: flex-start; }
+    .portal-booking-actions { width: 100%; }
+
+    /* Faculty schedule editor rows */
+    .faculty-schedule-editor__row {
+        flex-wrap: wrap;
+    }
+    .faculty-schedule-editor__date {
+        width: 100%;
+        flex-shrink: 1;
+    }
+    .faculty-schedule-editor__time {
+        width: 45%;
+        min-width: 90px;
+    }
+    .faculty-schedule-editor__row .faculty-schedule-editor__select {
+        min-width: 100px;
+    }
+    .faculty-schedule-editor { padding: 1rem; }
+
+    /* Admin reset area */
+    .admin-reset-area { flex-direction: column; align-items: flex-start; }
+    .admin-reset-area span { margin-left: 0 !important; margin-top: 0.5rem; display: block; }
+
+    /* Toast notifications */
+    .toast-container { right: 0.5rem; left: 0.5rem; }
+    .toast { max-width: 100%; }
+}
+
+/* ─── Small mobile (≤ 480px) ───────────────── */
+@media (max-width: 480px) {
+    .portal-page-header__title { font-size: 0.95rem; }
+    .portal-page-header__user { display: none; }
+    .portal-page-header__back { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+    .portal-page-header__logo { width: 30px; height: 30px; font-size: 0.9rem; }
+    .prof-card__book-btn { padding: 0.7rem 1rem; }
 }

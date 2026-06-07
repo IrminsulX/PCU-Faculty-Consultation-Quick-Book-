@@ -12,20 +12,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="auth-page">
-    <div class="auth-particles">
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
-        <div class="auth-particle"></div>
+    <!-- Dot grid overlay -->
+    <div class="auth-grid"></div>
+
+    <!-- Vignette darkening at edges -->
+    <div class="auth-vignette"></div>
+
+    <!-- Floating geometric shapes -->
+    <div class="auth-shapes">
+        <div class="auth-shape auth-shape--circle"></div>
+        <div class="auth-shape auth-shape--diamond"></div>
+        <div class="auth-shape auth-shape--ring"></div>
+        <div class="auth-shape auth-shape--dot"></div>
+        <div class="auth-shape auth-shape--circle"></div>
+        <div class="auth-shape auth-shape--diamond"></div>
+        <div class="auth-shape auth-shape--ring"></div>
+        <div class="auth-shape auth-shape--dot"></div>
+        <div class="auth-shape auth-shape--circle"></div>
+        <div class="auth-shape auth-shape--diamond"></div>
+        <div class="auth-shape auth-shape--dot"></div>
+        <div class="auth-shape auth-shape--ring"></div>
     </div>
+
     <div class="auth-split" id="auth-split">
         <!-- Filled by auth.js -->
     </div>
@@ -38,10 +46,9 @@
         'use strict';
         var PCU = window.PCU;
 
-        // If already logged in, redirect to home
         async function checkAndRedirect() {
             var sessionId = localStorage.getItem('pcu_session_id');
-            if (sessionId) {
+            if (sessionId && sessionId !== 'pending_local') {
                 try {
                     var result = await PCU.apiCheckSession(sessionId);
                     if (result.valid) {
@@ -51,7 +58,38 @@
                     }
                 } catch (e) {}
             }
-            // Not logged in — render the auth forms
+
+            // Check for pending faculty user in localStorage
+            var saved = localStorage.getItem('pcu_current_user');
+            if (saved) {
+                try {
+                    var user = JSON.parse(saved);
+                    if (user && user.role === 'faculty' && user.status === 'pending') {
+                        // Show pending banner instead of login form
+                        var split = document.getElementById('auth-split');
+                        split.innerHTML =
+                            '<div class="auth-card">' +
+                                '<div class="auth-card__header">' +
+                                    '<img src="images/pcu-logo.png" alt="PCU Logo" class="auth-card__logo" onerror="this.style.display=\'none\'">' +
+                                    '<h1 class="auth-card__title">PCU Quick-Book</h1>' +
+                                    '<p class="auth-card__subtitle">Faculty Consultation Booking System</p>' +
+                                '</div>' +
+                                '<div style="padding:1.5rem;text-align:center;">' +
+                                    '<div style="font-size:2.2rem;margin-bottom:0.6rem;">&#x23F3;</div>' +
+                                    '<h2 style="font-size:1.1rem;color:#13274f;margin-bottom:0.4rem;">Account Pending Approval</h2>' +
+                                    '<p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Hi <strong>' + user.name + '</strong>, your faculty account is awaiting admin approval. You can browse the directory while you wait.</p>' +
+                                    '<a href="home.html" class="auth-form__submit" style="text-decoration:none;display:inline-block;">Go to Home Page</a>' +
+                                    '<div style="margin-top:1.2rem;">' +
+                                        '<button onclick="localStorage.removeItem(\'pcu_current_user\');localStorage.removeItem(\'pcu_session_id\');window.location.reload();" ' +
+                                            'style="background:none;border:none;color:#888;cursor:pointer;font-size:0.82rem;text-decoration:underline;">Sign in with a different account</button>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                        return;
+                    }
+                } catch (e) {}
+            }
+
             PCU.renderAuthPage();
         }
 

@@ -228,7 +228,7 @@
     });
 
     if (result.success) {
-      return { success: true, pending: true };
+      return { success: true, pending: true, userId: facultyId };
     }
     return result;
   };
@@ -490,6 +490,38 @@
           setTimeout(function () {
             window.location.href = 'home.html';
           }, 500);
+        } else if (result.error && result.error.indexOf('pending') !== -1) {
+          // Pending user — restore their data in localStorage so home.html can read it
+          var pendingUser = await PCU.apiGetUser(userId);
+          if (!pendingUser && /^[0-9]{9}$/.test(userId)) {
+            pendingUser = await PCU.apiGetUser('S' + userId);
+          }
+          if (pendingUser) {
+            localStorage.setItem('pcu_current_user', JSON.stringify(pendingUser));
+            localStorage.setItem('pcu_session_id', 'pending_local');
+          }
+          // Show pending banner
+          var split = document.getElementById('auth-split');
+          if (split) {
+            split.innerHTML =
+              '<div class="auth-card">' +
+                '<div class="auth-card__header">' +
+                  '<img src="images/pcu-logo.png" alt="PCU Logo" class="auth-card__logo" onerror="this.style.display=\'none\'">' +
+                  '<h1 class="auth-card__title">PCU Quick-Book</h1>' +
+                  '<p class="auth-card__subtitle">Faculty Consultation Booking System</p>' +
+                '</div>' +
+                '<div style="padding:1.5rem;text-align:center;">' +
+                  '<div style="font-size:2.2rem;margin-bottom:0.6rem;">&#x23F3;</div>' +
+                  '<h2 style="font-size:1.1rem;color:#13274f;margin-bottom:0.4rem;">Account Pending Approval</h2>' +
+                  '<p style="color:#666;font-size:0.9rem;margin-bottom:1rem;">Your faculty account is awaiting admin approval. You can browse the directory while you wait.</p>' +
+                  '<a href="home.html" class="auth-form__submit" style="text-decoration:none;display:inline-block;">Go to Home Page</a>' +
+                  '<div style="margin-top:1.2rem;">' +
+                    '<button onclick="localStorage.removeItem(\'pcu_current_user\');localStorage.removeItem(\'pcu_session_id\');window.location.reload();" ' +
+                      'style="background:none;border:none;color:#888;cursor:pointer;font-size:0.82rem;text-decoration:underline;">Sign in with a different account</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          }
         } else {
           errorEl.textContent = result.error;
           errorEl.classList.add('auth-form__error--visible');
@@ -517,17 +549,22 @@
           var studentId = document.getElementById('reg-student-id').value;
           var department = document.getElementById('reg-student-department').value;
           var course = document.getElementById('reg-course').value;
-          result = PCU.registerStudent({ studentId: studentId, name: name, email: email, password: password, department: department, course: course });
+          result = await PCU.registerStudent({ studentId: studentId, name: name, email: email, password: password, department: department, course: course });
         } else {
           var facultyId = document.getElementById('reg-faculty-id').value;
           var department = document.getElementById('reg-department').value;
           var specialization = document.getElementById('reg-specialization').value;
-          result = PCU.registerFaculty({ facultyId: facultyId, name: name, email: email, password: password, department: department, specialization: specialization });
+          result = await PCU.registerFaculty({ facultyId: facultyId, name: name, email: email, password: password, department: department, specialization: specialization });
         }
 
         if (result.success) {
           if (result.pending) {
-            successEl.innerHTML = 'Registration submitted! Your account is <strong>pending admin approval</strong>. You will be able to log in once an administrator approves your account.';
+            // Faculty pending — store user locally and redirect to home (no server session needed)
+            PCU.currentUser = { user_id: result.userId, name: name, email: email, role: 'faculty', status: 'pending', department: department, specialization: specialization, initials: name.split(' ').map(function(n){return n[0]}).join('').substr(0,2).toUpperCase() };
+            localStorage.setItem('pcu_current_user', JSON.stringify(PCU.currentUser));
+            localStorage.setItem('pcu_session_id', 'pending_local');
+            window.location.href = 'home.html';
+            return;
           } else {
             successEl.textContent = 'Registration successful! You can now sign in.';
           }

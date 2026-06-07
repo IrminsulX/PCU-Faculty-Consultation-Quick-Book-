@@ -173,11 +173,27 @@
           if (adminLink) adminLink.style.display = '';
           break;
         case 'faculty':
-          if (facultyLink) facultyLink.style.display = '';
+          if (facultyLink) {
+            if (PCU.currentUser.status === 'pending') {
+              facultyLink.style.display = 'none';
+            } else {
+              facultyLink.style.display = '';
+            }
+          }
           break;
         case 'student':
           if (portalLink) portalLink.style.display = '';
           break;
+      }
+
+      // Show pending approval banner if applicable
+      var pendingBanner = document.getElementById('pending-approval-banner');
+      if (pendingBanner) {
+        if (PCU.currentUser.status === 'pending') {
+          pendingBanner.style.display = 'flex';
+        } else {
+          pendingBanner.style.display = 'none';
+        }
       }
     } else {
       // Not logged in: show Sign In, hide portal links

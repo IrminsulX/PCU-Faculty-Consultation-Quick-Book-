@@ -35,7 +35,7 @@
     position: absolute; right: 0.4rem;
     background: none; border: none; font-size: 1.2rem;
     color: var(--pc-text-muted); cursor: pointer;
-    padding: 0.2rem 0.45rem; line-height: 1; border-radius: 50%;
+    padding: 0.4rem 0.5rem; line-height: 1; border-radius: 50%;
     transition: color 0.15s, background 0.15s;
 }
 .dir-search__clear:hover { color: var(--pc-maroon); background: #E8F0FB; }
@@ -89,7 +89,7 @@
 .dir-avail__clear {
     background: none; border: none; font-size: 1.2rem;
     color: var(--pc-text-muted); cursor: pointer;
-    padding: 0.15rem 0.4rem; line-height: 1; border-radius: 50%;
+    padding: 0.4rem 0.5rem; line-height: 1; border-radius: 50%;
     transition: color 0.15s, background 0.15s;
 }
 .dir-avail__clear:hover { color: var(--pc-maroon); background: #E8F0FB; }
@@ -172,7 +172,7 @@
 
 /* Request Meeting Button */
 .prof-card__book-btn {
-    width: 100%; padding: 0.65rem 1rem;
+    width: 100%; padding: 0.7rem 1rem;
     font-family: var(--font-main); font-size: 0.88rem; font-weight: 700;
     color: white; background: var(--pc-maroon);
     border: none; border-radius: 25px; cursor: pointer;

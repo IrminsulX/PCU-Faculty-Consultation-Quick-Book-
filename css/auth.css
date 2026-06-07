@@ -5,95 +5,243 @@
 
 /* ─── Auth Page Container ──────────────────────── */
 .auth-page {
-    position: fixed;
-    inset: 0;
-    background-color: #0a0f1a;
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: linear-gradient(135deg, #080c18 0%, #0d1528 40%, #111d35 70%, #0a1222 100%);
     z-index: 5000;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow-y: auto;
     padding: 2rem;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Slow-moving gradient orbs */
+/* ─── Mesh Gradient Blobs ──────────────────────── */
 .auth-page::before {
     content: '';
-    position: absolute;
-    top: -40%;
-    left: -40%;
-    width: 180%;
-    height: 180%;
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
     background:
-        radial-gradient(ellipse 600px 600px at 20% 25%, rgba(27, 58, 107, 0.35) 0%, transparent 70%),
-        radial-gradient(ellipse 500px 500px at 75% 70%, rgba(19, 39, 79, 0.3) 0%, transparent 70%),
-        radial-gradient(ellipse 400px 400px at 50% 50%, rgba(10, 15, 26, 0.5) 0%, transparent 70%);
-    animation: orbDrift1 20s ease-in-out infinite alternate;
+        radial-gradient(ellipse 55vw 55vw at 15% 20%, rgba(27, 58, 107, 0.4) 0%, transparent 65%),
+        radial-gradient(ellipse 45vw 45vw at 80% 75%, rgba(19, 39, 79, 0.35) 0%, transparent 60%),
+        radial-gradient(ellipse 35vw 35vw at 55% 45%, rgba(58, 111, 181, 0.15) 0%, transparent 55%),
+        radial-gradient(ellipse 25vw 25vw at 30% 80%, rgba(183, 28, 28, 0.12) 0%, transparent 50%);
+    animation: meshDrift 24s ease-in-out infinite alternate;
     pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
+/* ─── Secondary Mesh Layer ─────────────────────── */
 .auth-page::after {
     content: '';
-    position: absolute;
-    top: -30%;
-    right: -30%;
+    position: fixed;
+    inset: -30%;
     width: 160%;
     height: 160%;
     background:
-        radial-gradient(ellipse 350px 350px at 60% 30%, rgba(58, 111, 181, 0.15) 0%, transparent 60%),
-        radial-gradient(ellipse 300px 300px at 30% 70%, rgba(27, 58, 107, 0.2) 0%, transparent 60%);
-    animation: orbDrift2 25s ease-in-out infinite alternate;
+        radial-gradient(ellipse 30vw 30vw at 70% 25%, rgba(58, 111, 181, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 40vw 40vw at 20% 60%, rgba(27, 58, 107, 0.22) 0%, transparent 60%);
+    animation: meshDrift2 30s ease-in-out infinite alternate;
     pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
-@keyframes orbDrift1 {
-    0%   { transform: translate(0, 0) scale(1); }
-    33%  { transform: translate(4%, -3%) scale(1.03); }
-    66%  { transform: translate(-2%, 5%) scale(0.98); }
-    100% { transform: translate(-5%, -4%) scale(1.05); }
+@keyframes meshDrift {
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+    25%  { transform: translate3d(3%, -2%, 0) rotate(1deg); }
+    50%  { transform: translate3d(-2%, 3%, 0) rotate(-0.5deg); }
+    75%  { transform: translate3d(1%, -1%, 0) rotate(0.5deg); }
+    100% { transform: translate3d(-3%, 2%, 0) rotate(-1deg); }
 }
 
-@keyframes orbDrift2 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    50%  { transform: translate(-4%, 3%) rotate(-2deg) scale(1.04); }
-    100% { transform: translate(3%, -2%) rotate(1deg) scale(0.97); }
+@keyframes meshDrift2 {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(-3%, 2%, 0) scale(1.03); }
+    100% { transform: translate3d(2%, -3%, 0) scale(0.97); }
 }
 
-/* ─── Floating Particles ───────────────────────── */
-.auth-particles {
-    position: absolute;
+/* ─── Dot Grid Overlay ─────────────────────────── */
+.auth-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(circle 1px, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ─── Floating Shapes ──────────────────────────── */
+.auth-shapes {
+    position: fixed;
     inset: 0;
     overflow: hidden;
     pointer-events: none;
+    z-index: 0;
 }
 
-.auth-particle {
+.auth-shape {
     position: absolute;
-    bottom: -10px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    animation: particleRise linear infinite;
+    bottom: -40px;
+    opacity: 0;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
-.auth-particle:nth-child(1)  { left: 5%;  width: 3px; height: 3px; animation-duration: 22s; animation-delay: 0s; }
-.auth-particle:nth-child(2)  { left: 12%; width: 5px; height: 5px; animation-duration: 28s; animation-delay: -4s; opacity: 0.7; }
-.auth-particle:nth-child(3)  { left: 22%; width: 2px; height: 2px; animation-duration: 18s; animation-delay: -8s; }
-.auth-particle:nth-child(4)  { left: 35%; width: 6px; height: 6px; animation-duration: 32s; animation-delay: -2s; opacity: 0.5; }
-.auth-particle:nth-child(5)  { left: 48%; width: 3px; height: 3px; animation-duration: 20s; animation-delay: -12s; }
-.auth-particle:nth-child(6)  { left: 58%; width: 4px; height: 4px; animation-duration: 26s; animation-delay: -6s; opacity: 0.6; }
-.auth-particle:nth-child(7)  { left: 70%; width: 2px; height: 2px; animation-duration: 24s; animation-delay: -10s; }
-.auth-particle:nth-child(8)  { left: 80%; width: 5px; height: 5px; animation-duration: 30s; animation-delay: -3s; opacity: 0.5; }
-.auth-particle:nth-child(9)  { left: 90%; width: 3px; height: 3px; animation-duration: 19s; animation-delay: -7s; }
-.auth-particle:nth-child(10) { left: 42%; width: 4px; height: 4px; animation-duration: 27s; animation-delay: -14s; opacity: 0.4; }
-.auth-particle:nth-child(11) { left: 15%; width: 2px; height: 2px; animation-duration: 21s; animation-delay: -9s; }
-.auth-particle:nth-child(12) { left: 65%; width: 3px; height: 3px; animation-duration: 25s; animation-delay: -5s; opacity: 0.6; }
+/* Circles */
+.auth-shape--circle {
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
 
-@keyframes particleRise {
-    0%   { transform: translateY(0) translateX(0) scale(0); opacity: 0; }
-    10%  { opacity: 1; transform: translateY(-10vh) translateX(5px) scale(1); }
-    50%  { transform: translateY(-50vh) translateX(-8px) scale(1); }
-    90%  { opacity: 1; transform: translateY(-90vh) translateX(3px) scale(0.8); }
-    100% { transform: translateY(-105vh) translateX(0) scale(0); opacity: 0; }
+/* Diamonds */
+.auth-shape--diamond {
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+    transform: rotate(45deg);
+}
+
+/* Rings */
+.auth-shape--ring {
+    border-radius: 50%;
+    border: 1px solid rgba(58, 111, 181, 0.15);
+    background: transparent;
+}
+
+/* Dot particles */
+.auth-shape--dot {
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Shape 1 — large circle, slow */
+.auth-shape:nth-child(1) {
+    left: 8%;
+    width: 60px; height: 60px;
+    animation: shapeRise 35s linear infinite;
+    animation-delay: 0s;
+}
+/* Shape 2 — diamond */
+.auth-shape:nth-child(2) {
+    left: 18%;
+    width: 18px; height: 18px;
+    animation: shapeRiseDiamond 22s linear infinite;
+    animation-delay: -3s;
+}
+/* Shape 3 — ring */
+.auth-shape:nth-child(3) {
+    left: 28%;
+    width: 40px; height: 40px;
+    animation: shapeRise 40s linear infinite;
+    animation-delay: -8s;
+}
+/* Shape 4 — small dot */
+.auth-shape:nth-child(4) {
+    left: 38%;
+    width: 4px; height: 4px;
+    animation: shapeRiseDot 15s linear infinite;
+    animation-delay: -1s;
+}
+/* Shape 5 — medium circle */
+.auth-shape:nth-child(5) {
+    left: 48%;
+    width: 30px; height: 30px;
+    animation: shapeRise 30s linear infinite;
+    animation-delay: -12s;
+}
+/* Shape 6 — diamond */
+.auth-shape:nth-child(6) {
+    left: 58%;
+    width: 14px; height: 14px;
+    animation: shapeRiseDiamond 25s linear infinite;
+    animation-delay: -6s;
+}
+/* Shape 7 — large ring */
+.auth-shape:nth-child(7) {
+    left: 68%;
+    width: 50px; height: 50px;
+    animation: shapeRise 38s linear infinite;
+    animation-delay: -15s;
+}
+/* Shape 8 — dot */
+.auth-shape:nth-child(8) {
+    left: 78%;
+    width: 5px; height: 5px;
+    animation: shapeRiseDot 18s linear infinite;
+    animation-delay: -4s;
+}
+/* Shape 9 — small circle */
+.auth-shape:nth-child(9) {
+    left: 88%;
+    width: 22px; height: 22px;
+    animation: shapeRise 28s linear infinite;
+    animation-delay: -10s;
+}
+/* Shape 10 — diamond */
+.auth-shape:nth-child(10) {
+    left: 45%;
+    width: 12px; height: 12px;
+    animation: shapeRiseDiamond 20s linear infinite;
+    animation-delay: -7s;
+}
+/* Shape 11 — dot */
+.auth-shape:nth-child(11) {
+    left: 12%;
+    width: 3px; height: 3px;
+    animation: shapeRiseDot 14s linear infinite;
+    animation-delay: -2s;
+}
+/* Shape 12 — ring */
+.auth-shape:nth-child(12) {
+    left: 72%;
+    width: 35px; height: 35px;
+    animation: shapeRise 32s linear infinite;
+    animation-delay: -18s;
+}
+
+/* ─── Shape Animations ─────────────────────────── */
+@keyframes shapeRise {
+    0%   { transform: translate3d(0, 0, 0) scale(0.5); opacity: 0; }
+    5%   { opacity: 0.6; transform: translate3d(8px, -5vh, 0) scale(1); }
+    25%  { transform: translate3d(-12px, -25vh, 0) scale(1); opacity: 0.5; }
+    50%  { transform: translate3d(10px, -50vh, 0) scale(0.9); opacity: 0.4; }
+    75%  { transform: translate3d(-6px, -75vh, 0) scale(0.8); opacity: 0.3; }
+    95%  { opacity: 0.1; transform: translate3d(4px, -95vh, 0) scale(0.6); }
+    100% { transform: translate3d(0, -105vh, 0) scale(0.3); opacity: 0; }
+}
+
+@keyframes shapeRiseDiamond {
+    0%   { transform: rotate(45deg) translate3d(0, 0, 0) scale(0.5); opacity: 0; }
+    5%   { opacity: 0.5; transform: rotate(45deg) translate3d(-6px, -5vh, 0) scale(1); }
+    25%  { transform: rotate(45deg) translate3d(10px, -25vh, 0) scale(1); opacity: 0.4; }
+    50%  { transform: rotate(45deg) translate3d(-8px, -50vh, 0) scale(0.9); opacity: 0.35; }
+    75%  { transform: rotate(45deg) translate3d(5px, -75vh, 0) scale(0.8); opacity: 0.2; }
+    95%  { opacity: 0.08; transform: rotate(45deg) translate3d(-3px, -95vh, 0) scale(0.6); }
+    100% { transform: rotate(45deg) translate3d(0, -105vh, 0) scale(0.3); opacity: 0; }
+}
+
+@keyframes shapeRiseDot {
+    0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+    8%   { opacity: 0.8; transform: translate3d(4px, -8vh, 0); }
+    50%  { transform: translate3d(-5px, -50vh, 0); opacity: 0.5; }
+    92%  { opacity: 0.15; transform: translate3d(3px, -92vh, 0); }
+    100% { transform: translate3d(0, -105vh, 0); opacity: 0; }
+}
+
+/* ─── Vignette ─────────────────────────────────── */
+.auth-vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 40%, rgba(5, 8, 18, 0.6) 100%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .auth-page--hidden { display: none; }
@@ -111,7 +259,9 @@
 .auth-card {
     background: #ffffff;
     border-radius: var(--radius-lg);
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
     overflow: hidden;
     animation: cardEntry 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -123,9 +273,21 @@
 
 /* ─── Auth Header ──────────────────────────────── */
 .auth-card__header {
-    background: var(--pc-maroon-dark);
+    background: linear-gradient(135deg, var(--pc-maroon-dark) 0%, #1a3a5c 100%);
     padding: 2rem 2rem 1.5rem;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card__header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle 80px at 20% 80%, rgba(58, 111, 181, 0.2) 0%, transparent 70%),
+        radial-gradient(circle 60px at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .auth-card__logo {
@@ -135,6 +297,7 @@
     object-fit: cover;
     border: 3px solid rgba(255, 255, 255, 0.25);
     margin-bottom: 0.8rem;
+    position: relative;
     animation: logoPulse 3s ease-in-out infinite alternate;
 }
 
@@ -148,11 +311,13 @@
     font-size: 1.4rem;
     color: white;
     margin-bottom: 0.2rem;
+    position: relative;
 }
 
 .auth-card__subtitle {
     font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.6);
+    position: relative;
 }
 
 /* ─── Auth Tabs ────────────────────────────────── */
@@ -506,4 +671,144 @@
     font-size: 0.75rem;
     color: #aaa;
     white-space: nowrap;
+}
+
+/* ─── Responsive ───────────────────────────────── */
+@media (max-width: 600px) {
+    .auth-page {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .auth-card {
+        max-width: 100%;
+    }
+
+    .auth-card__header {
+        padding: 1.5rem 1.2rem 1rem;
+    }
+
+    .auth-card__logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .auth-card__title {
+        font-size: 1.2rem;
+    }
+
+    .auth-card__body {
+        padding: 1.2rem;
+        min-height: auto;
+    }
+
+    .auth-form__row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .auth-role-select {
+        flex-direction: column;
+    }
+
+    .auth-card__footer {
+        padding: 0.8rem 1.2rem 1rem;
+    }
+
+    /* Reduce shape complexity on mobile */
+    .auth-shape:nth-child(n+7) {
+        display: none;
+    }
+
+    .auth-grid {
+        background-size: 24px 24px;
+    }
+}
+
+@media (max-width: 380px) {
+    .auth-page {
+        padding: 0.5rem;
+        align-items: flex-start;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .auth-card__header {
+        padding: 1.2rem 1rem 0.8rem;
+    }
+
+    .auth-card__body {
+        padding: 1rem;
+    }
+}
+
+/* ─── Quick-Book Form Mobile Spacing ──────────── */
+@media (max-width: 600px) {
+    .booking-form {
+        gap: 1.2rem;
+    }
+
+    .form-section {
+        gap: 0.8rem;
+    }
+
+    .form-section__legend {
+        font-size: 1.1rem;
+        gap: 0.5rem;
+        padding-bottom: 0.4rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .form-section__number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .form-row {
+        gap: 0.8rem;
+        flex-direction: column !important;
+    }
+
+    .form-row > .form-group {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .form-group {
+        gap: 0.3rem;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+    }
+
+    .form-input,
+    .form-select {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .form-input--date {
+        max-width: 100%;
+    }
+
+    .mode-toggle-group {
+        gap: 0.6rem;
+    }
+
+    .mode-option__card {
+        padding: 0.8rem;
+    }
+
+    .time-slot-pill__label {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .form-disclaimer {
+        font-size: 0.75rem;
+    }
 }

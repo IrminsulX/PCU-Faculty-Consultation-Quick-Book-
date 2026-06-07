@@ -154,6 +154,11 @@
 .form-row--two-col > .form-group { flex: 1 1 220px; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
 
+@media (max-width: 900px) {
+    .form-row--two-col { flex-direction: column !important; flex-wrap: nowrap !important; }
+    .form-row--two-col > .form-group { flex: none !important; width: 100% !important; max-width: 100% !important; }
+}
+
 .form-label {
     font-weight: 600; font-size: 0.9rem; color: var(--pc-text-primary);
     display: flex; align-items: center; gap: 0.3rem;

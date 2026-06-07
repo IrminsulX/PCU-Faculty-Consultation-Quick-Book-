@@ -23,7 +23,7 @@
 .helpdesk-panel__close {
     background: none; border: none; color: white;
     font-size: 1.8rem; line-height: 1; cursor: pointer;
-    padding: 0 0.3rem; opacity: 0.8; transition: opacity 0.2s;
+    padding: 0.3rem 0.5rem; opacity: 0.8; transition: opacity 0.2s;
 }
 .helpdesk-panel__close:hover { opacity: 1; }
 
