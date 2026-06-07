@@ -51,6 +51,80 @@
     document.querySelectorAll('.auth-form__success').forEach(function (e) { e.classList.remove('auth-form__success--visible'); });
   };
 
+  // ─── Department-Course Mapping ────────────────────
+  PCU.DEPARTMENT_COURSES = {
+    'College of Arts and Sciences': [
+      'Bachelor of Arts in English Language Studies',
+      'Bachelor of Arts in Broadcasting',
+      'Bachelor of Arts in Political Science',
+      'Bachelor of Science in Biology',
+      'Bachelor of Science in Psychology',
+      'Bachelor of Arts in Psychology',
+      'Bachelor of Arts in Philosophy'
+    ],
+    'College of Business Administration and Accountancy': [
+      'Bachelor of Science in Accountancy',
+      'Bachelor of Science in Business Administration - Major in Marketing Management',
+      'Bachelor of Science in Business Administration - Major in Operations Management',
+      'Bachelor of Science in Business Administration - Major in Financial Management',
+      'Bachelor of Science in Customs Administration',
+      'Bachelor of Science in Real Estate Management'
+    ],
+    'College of Criminal Justice': [
+      'Bachelor of Science in Criminology'
+    ],
+    'College of Education': [
+      'Bachelor of Early Childhood Education',
+      'Bachelor of Elementary Education',
+      'Bachelor of Secondary Education - Major in English',
+      'Bachelor of Secondary Education - Major in General Science',
+      'Bachelor of Secondary Education - Major in Mathematics',
+      'Bachelor of Secondary Education - Major in Social Studies',
+      'Bachelor of Physical Education'
+    ],
+    'College of Informatics': [
+      'Bachelor of Science in Computer Engineering',
+      'Bachelor of Science in Computer Science',
+      'Bachelor of Science in Information Technology',
+      'Bachelor of Science in Information System',
+      'Bachelor of Multimedia Arts'
+    ],
+    'College of Hospitality and Tourism Management': [
+      'Bachelor of Science in Hospitality Management',
+      'Bachelor of Science in Tourism Management'
+    ],
+    'College of Nursing and Health Sciences': [
+      'Bachelor of Science in Nursing',
+      'Bachelor of Science in Nutrition and Dietetics'
+    ],
+    'College of Social Work': [
+      'Bachelor of Science in Social Work'
+    ],
+    'College of Law': [
+      'Juris Doctor'
+    ],
+    'Institute of Philosophy and Religious Studies': [
+      'Bachelor of Arts in Church Management'
+    ]
+  };
+
+  // ─── Update Course Dropdown Based on Department ──
+  PCU.updateCourseOptions = function (department) {
+    var courseSelect = document.getElementById('reg-course');
+    if (!courseSelect) return;
+
+    courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
+
+    if (department && PCU.DEPARTMENT_COURSES[department]) {
+      PCU.DEPARTMENT_COURSES[department].forEach(function (course) {
+        var option = document.createElement('option');
+        option.value = course;
+        option.textContent = course;
+        courseSelect.appendChild(option);
+      });
+    }
+  };
+
   // ─── Toggle Faculty Fields on Role Select ────────
   PCU.toggleRoleFields = function (role) {
     var facultyFields = document.querySelector('.auth-faculty-fields');
@@ -345,26 +419,14 @@
                     '<option value="College of Hospitality and Tourism Management">College of Hospitality and Tourism Management</option>' +
                     '<option value="College of Nursing and Health Sciences">College of Nursing and Health Sciences</option>' +
                     '<option value="College of Social Work">College of Social Work</option>' +
+                    '<option value="College of Law">College of Law</option>' +
+                    '<option value="Institute of Philosophy and Religious Studies">Institute of Philosophy and Religious Studies</option>' +
                   '</select>' +
                 '</div>' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Course / Program *</label>' +
                   '<select class="auth-form__select" id="reg-course">' +
-                    '<option value="">-- Select Course --</option>' +
-                    '<option value="BS Computer Science">BS Computer Science</option>' +
-                    '<option value="BS Information Technology">BS Information Technology</option>' +
-                    '<option value="BS Business Administration">BS Business Administration</option>' +
-                    '<option value="BS Accountancy">BS Accountancy</option>' +
-                    '<option value="BS Education">BS Education</option>' +
-                    '<option value="BS Nursing">BS Nursing</option>' +
-                    '<option value="BS Tourism Management">BS Tourism Management</option>' +
-                    '<option value="BS Social Work">BS Social Work</option>' +
-                    '<option value="BS Criminal Justice">BS Criminal Justice</option>' +
-                    '<option value="BS Hospitality Management">BS Hospitality Management</option>' +
-                    '<option value="BA Communication">BA Communication</option>' +
-                    '<option value="BA Psychology">BA Psychology</option>' +
-                    '<option value="BS Engineering">BS Engineering</option>' +
-                    '<option value="Other">Other</option>' +
+                    '<option value="">-- Select Department First --</option>' +
                   '</select>' +
                 '</div>' +
               '</div>' +
@@ -386,31 +448,13 @@
                     '<option value="College of Hospitality and Tourism Management">College of Hospitality and Tourism Management</option>' +
                     '<option value="College of Nursing and Health Sciences">College of Nursing and Health Sciences</option>' +
                     '<option value="College of Social Work">College of Social Work</option>' +
+                    '<option value="College of Law">College of Law</option>' +
+                    '<option value="Institute of Philosophy and Religious Studies">Institute of Philosophy and Religious Studies</option>' +
                   '</select>' +
                 '</div>' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Specialization</label>' +
                   '<input type="text" class="auth-form__input" id="reg-specialization" placeholder="e.g., Software Engineering">' +
-                '</div>' +
-                '<div class="auth-form__group">' +
-                  '<label class="auth-form__label">Course / Program</label>' +
-                  '<select class="auth-form__select" id="reg-faculty-course">' +
-                    '<option value="">-- Select Course --</option>' +
-                    '<option value="BS Computer Science">BS Computer Science</option>' +
-                    '<option value="BS Information Technology">BS Information Technology</option>' +
-                    '<option value="BS Business Administration">BS Business Administration</option>' +
-                    '<option value="BS Accountancy">BS Accountancy</option>' +
-                    '<option value="BS Education">BS Education</option>' +
-                    '<option value="BS Nursing">BS Nursing</option>' +
-                    '<option value="BS Tourism Management">BS Tourism Management</option>' +
-                    '<option value="BS Social Work">BS Social Work</option>' +
-                    '<option value="BS Criminal Justice">BS Criminal Justice</option>' +
-                    '<option value="BS Hospitality Management">BS Hospitality Management</option>' +
-                    '<option value="BA Communication">BA Communication</option>' +
-                    '<option value="BA Psychology">BA Psychology</option>' +
-                    '<option value="BS Engineering">BS Engineering</option>' +
-                    '<option value="Other">Other</option>' +
-                  '</select>' +
                 '</div>' +
               '</div>' +
               '<div class="auth-form__error" id="auth-register-error"></div>' +
@@ -443,6 +487,14 @@
         PCU.toggleRoleFields(this.value);
       });
     });
+
+    // Student department change → update course dropdown
+    var deptSelect = document.getElementById('reg-student-department');
+    if (deptSelect) {
+      deptSelect.addEventListener('change', function () {
+        PCU.updateCourseOptions(this.value);
+      });
+    }
 
     // Login form
     var loginForm = document.getElementById('auth-login-form');
@@ -498,8 +550,7 @@
           var facultyId = document.getElementById('reg-faculty-id').value;
           var department = document.getElementById('reg-department').value;
           var specialization = document.getElementById('reg-specialization').value;
-          var facultyCourse = document.getElementById('reg-faculty-course').value;
-          result = PCU.registerFaculty({ facultyId: facultyId, name: name, email: email, password: password, department: department, specialization: specialization, course: facultyCourse });
+          result = PCU.registerFaculty({ facultyId: facultyId, name: name, email: email, password: password, department: department, specialization: specialization });
         }
 
         if (result.success) {
@@ -510,9 +561,10 @@
           }
           successEl.classList.add('auth-form__success--visible');
           registerForm.reset();
-          // Reset role to student
+          // Reset role to student and clear course dropdown
           document.querySelector('input[name="reg_role"][value="student"]').checked = true;
           PCU.toggleRoleFields('student');
+          PCU.updateCourseOptions('');
           // Switch to login tab after delay
           setTimeout(function () { PCU.switchAuthTab('login'); }, 2000);
         } else {
