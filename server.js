@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(__dirname, { index: 'home.html' }));
 
 // Database
 let db = null;
@@ -380,6 +380,11 @@ app.post('/api/reset', (req, res) => {
         fs.unlinkSync(DB_PATH);
     }
     res.json({ success: true, message: 'Database reset. Restart the server.' });
+});
+
+// Root redirect to home.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'home.html'));
 });
 
 // Start server
