@@ -54,8 +54,12 @@
   // ─── Toggle Faculty Fields on Role Select ────────
   PCU.toggleRoleFields = function (role) {
     var facultyFields = document.querySelector('.auth-faculty-fields');
+    var studentFields = document.querySelector('.student-fields');
     if (facultyFields) {
       facultyFields.classList.toggle('auth-faculty-fields--visible', role === 'faculty');
+    }
+    if (studentFields) {
+      studentFields.style.display = role === 'student' ? '' : 'none';
     }
   };
 
@@ -65,13 +69,14 @@
     var name = data.name.trim();
     var email = data.email.trim().toLowerCase();
     var password = data.password.trim();
+    var department = data.department.trim();
     var course = data.course.trim();
 
     // Validate 10-digit ID
     if (!/^[0-9]{10}$/.test(studentId)) {
       return { success: false, error: 'Student ID must be exactly 10 digits.' };
     }
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !department || !course) {
       return { success: false, error: 'Please fill all required fields.' };
     }
     if (password.length < 6) {
@@ -99,7 +104,7 @@
       password: password,
       role: 'student',
       status: 'approved',
-      department: '',
+      department: department,
       specialization: '',
       course: course
     });
@@ -117,6 +122,8 @@
     var password = data.password.trim();
     var department = data.department.trim();
     var specialization = data.specialization.trim();
+    var course = data.course ? data.course.trim() : '';
+    var facultyIdInput = data.facultyId ? data.facultyId.trim() : '';
 
     if (!name || !email || !password || !department) {
       return { success: false, error: 'Please fill all required fields.' };
@@ -131,9 +138,20 @@
       return { success: false, error: 'This email is already registered.' };
     }
 
-    // Generate faculty ID
-    var count = PCU.dbGetPendingFacultyCount() + PCU.dbGetApprovedFacultyCount() + 1;
-    var facultyId = 'F' + String(count).padStart(3, '0');
+    // Use provided faculty ID or generate one
+    var facultyId;
+    if (facultyIdInput && /^[0-9]{10}$/.test(facultyIdInput)) {
+      // Check if the provided ID already exists
+      var existingId = PCU.dbGetUserByUserId(facultyIdInput);
+      if (existingId) {
+        return { success: false, error: 'This Faculty ID is already registered.' };
+      }
+      facultyId = facultyIdInput;
+    } else {
+      // Generate faculty ID
+      var count = PCU.dbGetPendingFacultyCount() + PCU.dbGetApprovedFacultyCount() + 1;
+      facultyId = 'F' + String(count).padStart(3, '0');
+    }
 
     // Create user account with pending status
     PCU.dbAddUser({
@@ -145,7 +163,7 @@
       status: 'pending',
       department: department,
       specialization: specialization,
-      course: ''
+      course: course
     });
 
     return { success: true, pending: true };
@@ -310,33 +328,89 @@
                 '<input type="password" class="auth-form__input" id="reg-password" placeholder="At least 6 characters" required minlength="6">' +
               '</div>' +
               // Student-specific fields
-              '<div class="auth-form__row student-fields" id="reg-student-fields">' +
+              '<div class="student-fields" id="reg-student-fields">' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Student ID *</label>' +
                   '<input type="text" class="auth-form__input" id="reg-student-id" placeholder="e.g., 202232946" maxlength="10" pattern="[0-9]{10}">' +
                 '</div>' +
                 '<div class="auth-form__group">' +
-                  '<label class="auth-form__label">Course</label>' +
-                  '<input type="text" class="auth-form__input" id="reg-course" placeholder="e.g., BS Computer Science">' +
+                  '<label class="auth-form__label">Department *</label>' +
+                  '<select class="auth-form__select" id="reg-student-department">' +
+                    '<option value="">-- Select Department --</option>' +
+                    '<option value="College of Arts and Sciences">College of Arts and Sciences</option>' +
+                    '<option value="College of Business Administration and Accountancy">College of Business Administration and Accountancy</option>' +
+                    '<option value="College of Criminal Justice">College of Criminal Justice</option>' +
+                    '<option value="College of Education">College of Education</option>' +
+                    '<option value="College of Informatics">College of Informatics</option>' +
+                    '<option value="College of Hospitality and Tourism Management">College of Hospitality and Tourism Management</option>' +
+                    '<option value="College of Nursing and Health Sciences">College of Nursing and Health Sciences</option>' +
+                    '<option value="College of Social Work">College of Social Work</option>' +
+                  '</select>' +
+                '</div>' +
+                '<div class="auth-form__group">' +
+                  '<label class="auth-form__label">Course / Program *</label>' +
+                  '<select class="auth-form__select" id="reg-course">' +
+                    '<option value="">-- Select Course --</option>' +
+                    '<option value="BS Computer Science">BS Computer Science</option>' +
+                    '<option value="BS Information Technology">BS Information Technology</option>' +
+                    '<option value="BS Business Administration">BS Business Administration</option>' +
+                    '<option value="BS Accountancy">BS Accountancy</option>' +
+                    '<option value="BS Education">BS Education</option>' +
+                    '<option value="BS Nursing">BS Nursing</option>' +
+                    '<option value="BS Tourism Management">BS Tourism Management</option>' +
+                    '<option value="BS Social Work">BS Social Work</option>' +
+                    '<option value="BS Criminal Justice">BS Criminal Justice</option>' +
+                    '<option value="BS Hospitality Management">BS Hospitality Management</option>' +
+                    '<option value="BA Communication">BA Communication</option>' +
+                    '<option value="BA Psychology">BA Psychology</option>' +
+                    '<option value="BS Engineering">BS Engineering</option>' +
+                    '<option value="Other">Other</option>' +
+                  '</select>' +
                 '</div>' +
               '</div>' +
               // Faculty-specific fields (hidden by default)
               '<div class="auth-faculty-fields" id="reg-faculty-fields">' +
                 '<div class="auth-form__group">' +
+                  '<label class="auth-form__label">Faculty ID *</label>' +
+                  '<input type="text" class="auth-form__input" id="reg-faculty-id" placeholder="e.g., 2019001234" maxlength="10" pattern="[0-9]{10}">' +
+                '</div>' +
+                '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Department *</label>' +
                   '<select class="auth-form__select" id="reg-department">' +
                     '<option value="">-- Select Department --</option>' +
-                    '<option value="College of Business Administration">College of Business Administration</option>' +
+                    '<option value="College of Arts and Sciences">College of Arts and Sciences</option>' +
+                    '<option value="College of Business Administration and Accountancy">College of Business Administration and Accountancy</option>' +
+                    '<option value="College of Criminal Justice">College of Criminal Justice</option>' +
                     '<option value="College of Education">College of Education</option>' +
-                    '<option value="College of Computer Studies">College of Computer Studies</option>' +
-                    '<option value="College of Arts & Sciences">College of Arts & Sciences</option>' +
-                    '<option value="College of Nursing">College of Nursing</option>' +
-                    '<option value="College of Engineering">College of Engineering</option>' +
+                    '<option value="College of Informatics">College of Informatics</option>' +
+                    '<option value="College of Hospitality and Tourism Management">College of Hospitality and Tourism Management</option>' +
+                    '<option value="College of Nursing and Health Sciences">College of Nursing and Health Sciences</option>' +
+                    '<option value="College of Social Work">College of Social Work</option>' +
                   '</select>' +
                 '</div>' +
                 '<div class="auth-form__group">' +
                   '<label class="auth-form__label">Specialization</label>' +
                   '<input type="text" class="auth-form__input" id="reg-specialization" placeholder="e.g., Software Engineering">' +
+                '</div>' +
+                '<div class="auth-form__group">' +
+                  '<label class="auth-form__label">Course / Program</label>' +
+                  '<select class="auth-form__select" id="reg-faculty-course">' +
+                    '<option value="">-- Select Course --</option>' +
+                    '<option value="BS Computer Science">BS Computer Science</option>' +
+                    '<option value="BS Information Technology">BS Information Technology</option>' +
+                    '<option value="BS Business Administration">BS Business Administration</option>' +
+                    '<option value="BS Accountancy">BS Accountancy</option>' +
+                    '<option value="BS Education">BS Education</option>' +
+                    '<option value="BS Nursing">BS Nursing</option>' +
+                    '<option value="BS Tourism Management">BS Tourism Management</option>' +
+                    '<option value="BS Social Work">BS Social Work</option>' +
+                    '<option value="BS Criminal Justice">BS Criminal Justice</option>' +
+                    '<option value="BS Hospitality Management">BS Hospitality Management</option>' +
+                    '<option value="BA Communication">BA Communication</option>' +
+                    '<option value="BA Psychology">BA Psychology</option>' +
+                    '<option value="BS Engineering">BS Engineering</option>' +
+                    '<option value="Other">Other</option>' +
+                  '</select>' +
                 '</div>' +
               '</div>' +
               '<div class="auth-form__error" id="auth-register-error"></div>' +
@@ -417,12 +491,15 @@
         var result;
         if (role === 'student') {
           var studentId = document.getElementById('reg-student-id').value;
+          var department = document.getElementById('reg-student-department').value;
           var course = document.getElementById('reg-course').value;
-          result = PCU.registerStudent({ studentId: studentId, name: name, email: email, password: password, course: course });
+          result = PCU.registerStudent({ studentId: studentId, name: name, email: email, password: password, department: department, course: course });
         } else {
+          var facultyId = document.getElementById('reg-faculty-id').value;
           var department = document.getElementById('reg-department').value;
           var specialization = document.getElementById('reg-specialization').value;
-          result = PCU.registerFaculty({ name: name, email: email, password: password, department: department, specialization: specialization });
+          var facultyCourse = document.getElementById('reg-faculty-course').value;
+          result = PCU.registerFaculty({ facultyId: facultyId, name: name, email: email, password: password, department: department, specialization: specialization, course: facultyCourse });
         }
 
         if (result.success) {
