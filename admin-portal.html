@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCU Admin Portal</title>
+    <link rel="icon" type="image/png" href="images/pcu-logo.png">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
@@ -66,22 +67,39 @@
                 await PCU.initDatabase();
                 PCU.loadAllFacultySchedules();
             } catch(e) {
-                console.warn('Database init failed:', e);
+                console.warn('Database init failed, using localStorage only:', e);
             }
 
-            // Check session properly
             var saved = localStorage.getItem('pcu_current_user');
-            if (saved) {
-                try {
-                    PCU.currentUser = JSON.parse(saved);
-                    var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
-                    if (user && user.status === 'approved' && user.role === 'admin') {
-                        PCU.renderAdminPortal();
-                        return;
-                    }
-                } catch(e) {}
+            if (!saved) {
+                showLoginPrompt();
+                return;
             }
 
+            try {
+                PCU.currentUser = JSON.parse(saved);
+            } catch(e) {
+                showLoginPrompt();
+                return;
+            }
+
+            if (PCU.dbReady && PCU.db) {
+                var user = PCU.dbGetUserByUserId(PCU.currentUser.user_id);
+                if (!user || user.status !== 'approved' || user.role !== 'admin') {
+                    showLoginPrompt();
+                    return;
+                }
+            } else {
+                if (PCU.currentUser.role !== 'admin') {
+                    showLoginPrompt();
+                    return;
+                }
+            }
+
+            PCU.renderAdminPortal();
+        }
+
+        function showLoginPrompt() {
             var body = document.getElementById('admin-portal-body');
             body.innerHTML = '<div class="portal-login"><div class="portal-login__icon">&#x1F6E1;&#xFE0F;</div><h2 class="portal-login__title">Admin Portal</h2><p class="portal-login__subtitle">Please log in as admin to access this portal.</p><a href="home.html" class="portal-login__submit" style="text-decoration:none;text-align:center;display:block;">Go to Login</a></div>';
         }
