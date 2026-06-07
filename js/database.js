@@ -489,6 +489,14 @@
     return { students: students, faculty: faculty, bookings: bookings, confirmed: confirmed, declined: declined, cancelled: cancelled };
   };
 
+  // ─── Reset Database ──────────────────────────────
+  PCU.resetDatabase = function () {
+    localStorage.removeItem('pcu_sqlite_db');
+    localStorage.removeItem('pcu_current_user');
+    localStorage.removeItem('PCU.bookings');
+    location.reload();
+  };
+
   // ─── Sync existing localStorage bookings to SQLite
   PCU.syncBookingsToDb = function () {
     if (!PCU.db) return;

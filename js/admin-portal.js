@@ -63,6 +63,17 @@
       '</div>' +
     '</div>';
 
+    // Reset Database Button
+    html += '<div class="admin-section">' +
+      '<div class="admin-section__header">' +
+        '<h3 class="admin-section__title">&#x1F504; Database Management</h3>' +
+      '</div>' +
+      '<div style="padding:1rem;">' +
+        '<button class="admin-action-btn admin-action-btn--delete" id="admin-reset-db-btn" style="padding:0.6rem 1.2rem;font-size:0.95rem;">Reset Database</button>' +
+        '<span style="margin-left:0.8rem;color:#888;font-size:0.85rem;">This will delete all data and reload with fresh demo data.</span>' +
+      '</div>' +
+    '</div>';
+
     // Pending Faculty Approvals
     html += '<div class="admin-section">' +
       '<div class="admin-section__header">' +
@@ -140,9 +151,19 @@
       btn.addEventListener('click', function () {
         var action = this.getAttribute('data-action');
         var userId = this.getAttribute('data-user-id');
-        PCU.handleAdminAction(action, userId);
+        if (action) PCU.handleAdminAction(action, userId);
       });
     });
+
+    // Reset DB button
+    var resetBtn = document.getElementById('admin-reset-db-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        if (confirm('Are you sure you want to reset the database? All data will be lost.')) {
+          PCU.resetDatabase();
+        }
+      });
+    }
   };
 
   // ─── Handle Admin Actions ────────────────────────
