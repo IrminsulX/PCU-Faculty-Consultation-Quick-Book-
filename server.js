@@ -447,12 +447,25 @@ app.get('/api/stats', (req, res) => {
     res.json({ students, faculty, bookings, confirmed, declined, cancelled });
 });
 
-// --- Reset Database ---
+// --- Reset Database (keep Admin, re-seed demo data) ---
 app.post('/api/reset', (req, res) => {
-    if (fs.existsSync(DB_PATH)) {
-        fs.unlinkSync(DB_PATH);
-    }
-    res.json({ success: true, message: 'Database reset. Restart the server.' });
+    if (!db) return res.json({ success: false, error: 'Database not ready.' });
+
+    // Delete all data except admin user
+    db.run("DELETE FROM consultation_hours");
+    db.run("DELETE FROM bookings");
+    db.run("DELETE FROM notifications");
+    db.run("DELETE FROM sessions");
+    db.run("DELETE FROM id_blacklist");
+    db.run("DELETE FROM students");
+    db.run("DELETE FROM faculty");
+    db.run("DELETE FROM users WHERE user_id != 'admin'");
+
+    // Re-seed demo data
+    seedDemoData();
+    saveDatabase();
+
+    res.json({ success: true, message: 'Database reset. Demo data restored.' });
 });
 
 // Root redirect to home.html

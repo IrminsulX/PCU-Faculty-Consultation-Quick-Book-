@@ -192,6 +192,7 @@
     await PCU.fetchFaculty();
     populateFacultySelect();
     populateFeaturedFaculty();
+    autoFillStudentInfo();
     await PCU.renderProfessorDirectory();
     PCU.renderNotificationPanel();
     PCU.updateBellBadge();
@@ -260,6 +261,37 @@
         badge;
       container.appendChild(item);
     });
+  }
+
+  // ─── Auto-fill Quick-Book Form Student Info ────────
+  function autoFillStudentInfo() {
+    if (!PCU.currentUser || PCU.currentUser.role !== 'student') return;
+
+    var nameInput = document.getElementById('student-name');
+    var idInput = document.getElementById('student-id');
+    var emailInput = document.getElementById('student-email');
+    var courseInput = document.getElementById('student-course');
+
+    if (nameInput) {
+      nameInput.value = PCU.currentUser.name || '';
+      nameInput.readOnly = true;
+      nameInput.style.background = '#f0f0f0';
+    }
+    if (idInput) {
+      idInput.value = (PCU.currentUser.user_id || '').replace(/^S/, '');
+      idInput.readOnly = true;
+      idInput.style.background = '#f0f0f0';
+    }
+    if (emailInput) {
+      emailInput.value = PCU.currentUser.email || '';
+      emailInput.readOnly = true;
+      emailInput.style.background = '#f0f0f0';
+    }
+    if (courseInput) {
+      courseInput.value = PCU.currentUser.course || '';
+      courseInput.readOnly = true;
+      courseInput.style.background = '#f0f0f0';
+    }
   }
 
   // ─── Init ──────────────────────────────────────────

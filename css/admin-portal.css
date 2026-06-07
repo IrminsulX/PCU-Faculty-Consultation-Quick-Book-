@@ -99,33 +99,58 @@
     background: white;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .admin-table th {
-    background: var(--pc-maroon);
+    background: var(--pc-maroon-dark);
     color: white;
-    padding: 0.8rem 1rem;
+    padding: 0.75rem 0.8rem;
     text-align: left;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
 }
 
 .admin-table td {
-    padding: 0.8rem 1rem;
+    padding: 0.65rem 0.8rem;
     border-bottom: 1px solid var(--pc-border);
     color: var(--pc-text-secondary);
+    vertical-align: middle;
 }
 
-.admin-table tr:hover td {
-    background: var(--pc-off-white);
+.admin-table tbody tr:nth-child(even) td {
+    background: #f8f9fb;
 }
 
-.admin-table tr:last-child td {
+.admin-table tbody tr:hover td {
+    background: #eef2f7;
+}
+
+.admin-table tbody tr:last-child td {
     border-bottom: none;
+}
+
+.admin-table__row-num {
+    width: 35px;
+    text-align: center;
+    color: var(--pc-text-muted);
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.admin-table__protected {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    background: var(--pc-light-gray);
+    color: var(--pc-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
 }
 
 /* Admin Status Badges */

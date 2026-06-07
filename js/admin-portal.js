@@ -72,9 +72,10 @@
       html += '<div class="admin-empty">No pending faculty registrations.</div>';
     } else {
       html += '<div class="admin-table-wrapper"><table class="admin-table">' +
-        '<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Actions</th></tr></thead><tbody>';
-      pendingFaculty.forEach(function (u) {
+        '<thead><tr><th>#</th><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Actions</th></tr></thead><tbody>';
+      pendingFaculty.forEach(function (u, idx) {
         html += '<tr>' +
+          '<td class="admin-table__row-num">' + (idx + 1) + '</td>' +
           '<td><strong>' + u.user_id + '</strong></td>' +
           '<td>' + u.name + '</td>' +
           '<td>' + u.email + '</td>' +
@@ -99,19 +100,20 @@
       html += '<div class="admin-empty">No users found.</div>';
     } else {
       html += '<div class="admin-table-wrapper"><table class="admin-table">' +
-        '<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th>Actions</th></tr></thead><tbody>';
-      allUsers.forEach(function (u) {
+        '<thead><tr><th>#</th><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Department</th><th>Actions</th></tr></thead><tbody>';
+      allUsers.forEach(function (u, idx) {
         var statusBadge = 'admin-badge--' + u.status;
         var roleBadge = 'admin-badge--' + u.role;
         var canDelete = u.user_id !== 'admin';
         html += '<tr>' +
+          '<td class="admin-table__row-num">' + (idx + 1) + '</td>' +
           '<td><strong>' + u.user_id + '</strong></td>' +
           '<td>' + u.name + '</td>' +
           '<td>' + u.email + '</td>' +
           '<td><span class="admin-badge ' + roleBadge + '">' + u.role.charAt(0).toUpperCase() + u.role.slice(1) + '</span></td>' +
           '<td><span class="admin-badge ' + statusBadge + '">' + u.status.charAt(0).toUpperCase() + u.status.slice(1) + '</span></td>' +
           '<td>' + (u.department || '-') + '</td>' +
-          '<td>' + (canDelete ? '<button class="admin-action-btn admin-action-btn--delete" data-action="delete" data-user-id="' + u.user_id + '">Delete</button>' : '<span style="color:#999;font-size:0.8rem;">Protected</span>') + '</td>' +
+          '<td>' + (canDelete ? '<button class="admin-action-btn admin-action-btn--delete" data-action="delete" data-user-id="' + u.user_id + '">Delete</button>' : '<span class="admin-table__protected">Protected</span>') + '</td>' +
         '</tr>';
       });
       html += '</tbody></table></div>';
@@ -133,11 +135,15 @@
     var resetBtn = document.getElementById('admin-reset-db-btn');
     if (resetBtn) {
       resetBtn.addEventListener('click', async function () {
-        if (confirm('Are you sure you want to reset the database?')) {
-          await PCU.apiResetDatabase();
-          localStorage.removeItem('pcu_current_user');
-          localStorage.removeItem('pcu_session_id');
-          window.location.href = 'home.html';
+        if (confirm('Are you sure you want to reset the database? All data except the Admin account will be deleted and demo data will be restored.')) {
+          var result = await fetch('/api/reset', { method: 'POST' });
+          var data = await result.json();
+          if (data.success) {
+            alert('Database has been reset. Demo data restored.');
+            PCU.renderAdminPortal();
+          } else {
+            alert('Failed to reset database: ' + (data.error || 'Unknown error'));
+          }
         }
       });
     }

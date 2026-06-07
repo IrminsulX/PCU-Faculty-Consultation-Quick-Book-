@@ -161,7 +161,7 @@
 }
 
 .portal-page-header {
-    background: linear-gradient(135deg, var(--pc-maroon-dark) 0%, var(--pc-maroon) 100%);
+    background: linear-gradient(135deg, var(--pc-maroon-dark) 0%, #1a3a5c 100%);
     color: white;
     padding: 0;
     box-shadow: var(--shadow-md);
@@ -171,11 +171,11 @@
 }
 
 .portal-page-header--faculty {
-    background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+    background: linear-gradient(135deg, var(--pc-maroon-dark) 0%, #1a3a5c 100%);
 }
 
 .portal-page-header--admin {
-    background: linear-gradient(135deg, #4A148C 0%, #6A1B9A 100%);
+    background: linear-gradient(135deg, var(--pc-maroon-dark) 0%, #1a3a5c 100%);
 }
 
 .portal-page-header__inner {
