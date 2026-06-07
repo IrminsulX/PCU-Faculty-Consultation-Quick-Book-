@@ -246,6 +246,16 @@
     min-width: 130px;
 }
 
+.faculty-schedule-editor__date {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--pc-border);
+    border-radius: 6px;
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    width: 150px;
+    flex-shrink: 0;
+}
+
 .faculty-schedule-editor__time {
     padding: 0.4rem 0.6rem;
     border: 1px solid var(--pc-border);

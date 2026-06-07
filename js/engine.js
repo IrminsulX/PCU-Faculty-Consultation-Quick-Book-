@@ -32,11 +32,16 @@
 
   /**
    * Get consultation hours for a professor on a given day.
+   * If date is provided, also filters by specific date.
    */
-  PCU.getConsultationHoursForDay = function (profId, dayName) {
+  PCU.getConsultationHoursForDay = function (profId, dayName, date) {
     var prof = PCU.getProfessor(profId);
     if (!prof) return [];
-    return prof.consultationHours.filter(function (ch) { return ch.day === dayName; });
+    return prof.consultationHours.filter(function (ch) {
+      if (ch.day !== dayName) return false;
+      if (date && ch.date && ch.date !== date) return false;
+      return true;
+    });
   };
 
   /**
@@ -45,7 +50,7 @@
   PCU.getAvailableSlots = function (profId, date, duration) {
     duration = duration || 30;
     var dayName = PCU.getDayOfWeek(date);
-    var hours = PCU.getConsultationHoursForDay(profId, dayName);
+    var hours = PCU.getConsultationHoursForDay(profId, dayName, date);
     var allSlots = [];
 
     for (var h = 0; h < hours.length; h++) {
@@ -76,7 +81,7 @@
 
     var date = data.date, startTime = data.startTime, endTime = data.endTime;
     var dayName = PCU.getDayOfWeek(date);
-    var dayHours = PCU.getConsultationHoursForDay(data.professorId, dayName);
+    var dayHours = PCU.getConsultationHoursForDay(data.professorId, dayName, date);
 
     if (dayHours.length === 0) {
       return { success: false, reason: prof.name + ' does not hold consultation hours on ' + dayName + '.' };

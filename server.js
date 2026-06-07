@@ -88,6 +88,17 @@ async function initDatabase() {
         read INTEGER DEFAULT 0
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS consultation_hours (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        faculty_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        day TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        buffer_time INTEGER DEFAULT 15,
+        created_at TEXT DEFAULT (datetime('now'))
+    )`);
+
     db.run(`CREATE TABLE IF NOT EXISTS id_blacklist (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id TEXT UNIQUE NOT NULL,
@@ -302,6 +313,67 @@ app.get('/api/blacklist', (req, res) => {
 app.get('/api/blacklist/check/:userId', (req, res) => {
     const result = dbGet("SELECT COUNT(*) as count FROM id_blacklist WHERE user_id = ?", [req.params.userId]);
     res.json({ blacklisted: result && result.count > 0 });
+});
+
+// --- Faculty ---
+const DEPT_COLORS = {
+    'College of Business Administration': '#1B3A6B',
+    'College of Education': '#2E7D32',
+    'College of Computer Studies': '#1565C0',
+    'College of Informatics': '#1565C0',
+    'College of Arts & Sciences': '#6A1B9A',
+    'College of Nursing': '#1A56DB',
+    'College of Engineering': '#E65100',
+    'College of Law': '#B71C1C',
+    'Institute of Philosophy and Religious Studies': '#00695C',
+    'Graduate School': '#4A148C'
+};
+
+app.get('/api/faculty', (req, res) => {
+    const rows = dbAll("SELECT * FROM users WHERE role = 'faculty' AND status = 'approved' ORDER BY name ASC");
+    const faculty = rows.map(u => ({
+        id: u.user_id,
+        name: u.name,
+        email: u.email,
+        department: u.department || '',
+        specialization: u.specialization || '',
+        initials: u.name.split(' ').map(n => n[0]).join('').substr(0, 2).toUpperCase(),
+        color: DEPT_COLORS[u.department] || '#1B3A6B'
+    }));
+    res.json(faculty);
+});
+
+// --- Consultation Hours ---
+app.get('/api/faculty/:facultyId/hours', (req, res) => {
+    const hours = dbAll("SELECT * FROM consultation_hours WHERE faculty_id = ? ORDER BY date ASC, start_time ASC", [req.params.facultyId]);
+    res.json(hours);
+});
+
+app.post('/api/faculty/:facultyId/hours', (req, res) => {
+    const { hours, bufferTime } = req.body;
+    const facultyId = req.params.facultyId;
+
+    // Delete existing hours for this faculty
+    db.run("DELETE FROM consultation_hours WHERE faculty_id = ?", [facultyId]);
+
+    // Insert new hours
+    if (hours && Array.isArray(hours)) {
+        hours.forEach(h => {
+            db.run(
+                "INSERT INTO consultation_hours (faculty_id, date, day, start_time, end_time, buffer_time) VALUES (?, ?, ?, ?, ?, ?)",
+                [facultyId, h.date, h.day, h.start, h.end, bufferTime || 15]
+            );
+        });
+    }
+
+    saveDatabase();
+    res.json({ success: true });
+});
+
+app.delete('/api/faculty/:facultyId/hours/:hourId', (req, res) => {
+    db.run("DELETE FROM consultation_hours WHERE id = ? AND faculty_id = ?", [req.params.hourId, req.params.facultyId]);
+    saveDatabase();
+    res.json({ success: true });
 });
 
 // --- Bookings ---

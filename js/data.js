@@ -7,25 +7,13 @@
 
   var PCU = window.PCU || {};
 
-  // ─── Professor Catalog ─────────────────────────────
-  PCU.PROFESSORS = [
-    { id:'delacruz', name:'Dr. Ricardo Dela Cruz', department:'College of Business Administration', specialization:'Business Management', email:'r.delacruz@pcu.edu.ph', initials:'DC', color:'#1B3A6B', consultationHours:[{day:'Monday',start:'09:00',end:'12:00'},{day:'Wednesday',start:'13:00',end:'17:00'},{day:'Friday',start:'09:00',end:'12:00'}], bufferTime:15 },
-    { id:'santos', name:'Prof. Maria Santos', department:'College of Business Administration', specialization:'Marketing', email:'m.santos@pcu.edu.ph', initials:'MS', color:'#1B3A6B', consultationHours:[{day:'Tuesday',start:'08:00',end:'12:00'},{day:'Thursday',start:'13:00',end:'17:00'}], bufferTime:10 },
-    { id:'gonzales', name:'Dr. Antonio Gonzales', department:'College of Business Administration', specialization:'Finance', email:'a.gonzales@pcu.edu.ph', initials:'AG', color:'#1B3A6B', consultationHours:[{day:'Monday',start:'13:00',end:'16:00'},{day:'Wednesday',start:'09:00',end:'12:00'}], bufferTime:20 },
-    { id:'mendoza', name:'Prof. Elena Mendoza', department:'College of Education', specialization:'Curriculum Studies', email:'e.mendoza@pcu.edu.ph', initials:'EM', color:'#2E7D32', consultationHours:[{day:'Tuesday',start:'09:00',end:'12:00'},{day:'Thursday',start:'09:00',end:'15:00'},{day:'Friday',start:'13:00',end:'17:00'}], bufferTime:15 },
-    { id:'rivera', name:'Dr. Jose Rivera', department:'College of Education', specialization:'Educational Leadership', email:'j.rivera@pcu.edu.ph', initials:'JR', color:'#2E7D32', consultationHours:[{day:'Monday',start:'08:00',end:'12:00'},{day:'Wednesday',start:'13:00',end:'17:00'}], bufferTime:15 },
-    { id:'aguilar', name:'Dr. Carlos Aguilar', department:'College of Computer Studies', specialization:'Software Engineering', email:'c.aguilar@pcu.edu.ph', initials:'CA', color:'#1565C0', consultationHours:[{day:'Monday',start:'13:00',end:'17:00'},{day:'Tuesday',start:'08:00',end:'12:00'},{day:'Wednesday',start:'13:00',end:'17:00'},{day:'Thursday',start:'08:00',end:'12:00'}], bufferTime:10 },
-    { id:'torres', name:'Prof. Patricia Torres', department:'College of Computer Studies', specialization:'Data Science', email:'p.torres@pcu.edu.ph', initials:'PT', color:'#1565C0', consultationHours:[{day:'Wednesday',start:'09:00',end:'12:00'},{day:'Friday',start:'13:00',end:'17:00'}], bufferTime:15 },
-    { id:'ramos', name:'Dr. Angela Ramos', department:'College of Arts & Sciences', specialization:'Psychology', email:'a.ramos@pcu.edu.ph', initials:'AR', color:'#6A1B9A', consultationHours:[{day:'Tuesday',start:'13:00',end:'17:00'},{day:'Thursday',start:'08:00',end:'12:00'}], bufferTime:15 },
-    { id:'castro', name:'Prof. Luis Castro', department:'College of Arts & Sciences', specialization:'Communication', email:'l.castro@pcu.edu.ph', initials:'LC', color:'#6A1B9A', consultationHours:[{day:'Monday',start:'08:00',end:'12:00'},{day:'Wednesday',start:'09:00',end:'12:00'},{day:'Friday',start:'09:00',end:'17:00'}], bufferTime:10 },
-    { id:'fernandez', name:'Dr. Isabel Fernandez', department:'College of Nursing', specialization:'Clinical Nursing', email:'i.fernandez@pcu.edu.ph', initials:'IF', color:'#1A56DB', consultationHours:[{day:'Tuesday',start:'08:00',end:'15:00'},{day:'Thursday',start:'08:00',end:'15:00'}], bufferTime:20 },
-    { id:'villar', name:'Prof. Miguel Villar', department:'College of Engineering', specialization:'Civil Engineering', email:'m.villar@pcu.edu.ph', initials:'MV', color:'#E65100', consultationHours:[{day:'Monday',start:'09:00',end:'16:00'},{day:'Wednesday',start:'09:00',end:'16:00'}], bufferTime:15 }
-  ];
+  // ─── Professor Catalog (loaded from API) ────────
+  PCU.PROFESSORS = [];
 
   // ─── State ─────────────────────────────────────────
   PCU.bookings = [];
   PCU.notificationQueue = [];
-  PCU.currentStudent = null; // logged-in student object
+  PCU.currentStudent = null;
 
   // ─── Helpers ───────────────────────────────────────
   PCU.timeToMinutes = function (t) { var p = t.split(':'); return parseInt(p[0]) * 60 + parseInt(p[1]); };
@@ -35,6 +23,7 @@
   PCU.getDayOfWeek = function (dateStr) { var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; return days[new Date(dateStr + 'T00:00:00').getDay()]; };
   PCU.todayStr = function () { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
   PCU.formatDate = function (dateStr) { var d = new Date(dateStr + 'T00:00:00'); var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); };
+  PCU.formatDateShort = function (dateStr) { var d = new Date(dateStr + 'T00:00:00'); var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return m[d.getMonth()] + ' ' + d.getDate(); };
 
   PCU.getProfessor = function (id) {
     return PCU.PROFESSORS.find(function (p) { return p.id === id; });
@@ -53,12 +42,82 @@
     for (var i = 1; i <= 7; i++) {
       var d = new Date(); d.setDate(d.getDate() + i);
       var dn = dayNames[d.getDay()];
-      if (prof.consultationHours.some(function (ch) { return ch.day === dn; })) return dn;
+      if (prof.consultationHours && prof.consultationHours.some(function (ch) { return ch.day === dn; })) return dn;
     }
     return null;
   };
 
-  // ─── Persistence ───────────────────────────────────
+  // ─── Fetch Faculty from API ───────────────────────
+  PCU.fetchFaculty = async function () {
+    try {
+      var response = await fetch('/api/faculty');
+      var faculty = await response.json();
+      PCU.PROFESSORS = faculty.map(function (f) {
+        return {
+          id: f.id,
+          name: f.name,
+          department: f.department,
+          specialization: f.specialization,
+          email: f.email,
+          initials: f.initials,
+          color: f.color,
+          consultationHours: [],
+          bufferTime: 15
+        };
+      });
+      // Load consultation hours for each faculty
+      for (var i = 0; i < PCU.PROFESSORS.length; i++) {
+        var prof = PCU.PROFESSORS[i];
+        try {
+          var hoursResp = await fetch('/api/faculty/' + prof.id + '/hours');
+          var hours = await hoursResp.json();
+          prof.consultationHours = hours.map(function (h) {
+            return { id: h.id, date: h.date, day: h.day, start: h.start_time, end: h.end_time };
+          });
+          if (hours.length > 0) {
+            prof.bufferTime = hours[0].buffer_time || 15;
+          }
+        } catch (e) {
+          console.warn('Failed to load hours for', prof.id, e);
+        }
+      }
+      console.log('Faculty loaded from API:', PCU.PROFESSORS.length);
+    } catch (err) {
+      console.warn('Failed to fetch faculty from API:', err);
+    }
+  };
+
+  // ─── Fetch consultation hours for one faculty ────
+  PCU.fetchConsultationHours = async function (facultyId) {
+    try {
+      var response = await fetch('/api/faculty/' + facultyId + '/hours');
+      var hours = await response.json();
+      return hours.map(function (h) {
+        return { id: h.id, date: h.date, day: h.day, start: h.start_time, end: h.end_time, bufferTime: h.buffer_time };
+      });
+    } catch (e) {
+      console.warn('Failed to fetch hours for', facultyId, e);
+      return [];
+    }
+  };
+
+  // ─── Save consultation hours via API ──────────────
+  PCU.saveConsultationHours = async function (facultyId, hours, bufferTime) {
+    try {
+      var response = await fetch('/api/faculty/' + facultyId + '/hours', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours: hours, bufferTime: bufferTime })
+      });
+      var result = await response.json();
+      return result.success;
+    } catch (e) {
+      console.warn('Failed to save hours for', facultyId, e);
+      return false;
+    }
+  };
+
+  // ─── Persistence (localStorage fallback) ──────────
   PCU.loadState = function () {
     try {
       PCU.bookings = JSON.parse(localStorage.getItem('pcu_bookings')) || [];
@@ -69,15 +128,14 @@
   PCU.saveBookings = function () { localStorage.setItem('pcu_bookings', JSON.stringify(PCU.bookings)); };
   PCU.saveNotifications = function () { localStorage.setItem('pcu_notifications', JSON.stringify(PCU.notificationQueue)); };
 
-  // ─── Faculty Consultation Hours Persistence ───────
+  // ─── Faculty Schedule (API + localStorage fallback) ──
   PCU.loadFacultySchedule = function (facultyId) {
+    // Try localStorage first (cached from API)
     try {
       var data = JSON.parse(localStorage.getItem('pcu_faculty_schedule_' + facultyId));
       if (data && data.consultationHours) return data;
     } catch (e) {}
-    // Return default from professor catalog
-    var prof = PCU.getProfessor(facultyId);
-    return prof ? { consultationHours: prof.consultationHours.slice(), bufferTime: prof.bufferTime } : { consultationHours: [], bufferTime: 15 };
+    return { consultationHours: [], bufferTime: 15 };
   };
 
   PCU.saveFacultySchedule = function (facultyId, schedule) {
@@ -92,17 +150,6 @@
   PCU.getEffectiveBufferTime = function (facultyId) {
     var schedule = PCU.loadFacultySchedule(facultyId);
     return schedule.bufferTime || 15;
-  };
-
-  // ─── Load All Faculty Schedules on Init ───────────
-  PCU.loadAllFacultySchedules = function () {
-    PCU.PROFESSORS.forEach(function (prof) {
-      var schedule = PCU.loadFacultySchedule(prof.id);
-      if (schedule && schedule.consultationHours) {
-        prof.consultationHours = schedule.consultationHours;
-        prof.bufferTime = schedule.bufferTime || 15;
-      }
-    });
   };
 
   window.PCU = PCU;

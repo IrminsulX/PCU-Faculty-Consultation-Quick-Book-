@@ -52,9 +52,17 @@
   };
 
   // ─── Professor Directory ──────────────────────────
-  PCU.renderProfessorDirectory = function () {
+  PCU.renderProfessorDirectory = async function () {
     var container = document.getElementById('directory-grid');
     if (!container) return;
+
+    // Show loading state
+    container.innerHTML = '<div class="directory-empty"><span class="directory-empty__icon">&#x23F3;</span><p>Loading faculty...</p></div>';
+
+    // Ensure faculty is loaded
+    if (PCU.PROFESSORS.length === 0) {
+      await PCU.fetchFaculty();
+    }
 
     var profs = PCU.getFilteredProfessors();
     var availDate = PCU._dirFilter.date;
@@ -117,7 +125,13 @@
       }
 
       var hoursHTML = prof.consultationHours.map(function (ch) {
-        return '<span class="prof-card__hour-chip">' + ch.day.substr(0, 3) + ' ' + PCU.formatTime12(ch.start) + '\u2013' + PCU.formatTime12(ch.end) + '</span>';
+        var label = '';
+        if (ch.date) {
+          label = PCU.formatDateShort(ch.date) + ' ' + ch.day.substr(0, 3) + ' ' + PCU.formatTime12(ch.start) + '\u2013' + PCU.formatTime12(ch.end);
+        } else {
+          label = ch.day.substr(0, 3) + ' ' + PCU.formatTime12(ch.start) + '\u2013' + PCU.formatTime12(ch.end);
+        }
+        return '<span class="prof-card__hour-chip">' + label + '</span>';
       }).join('');
 
       card.innerHTML =

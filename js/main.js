@@ -187,9 +187,10 @@
   }
 
   // ─── Init App (called after login) ───────────────
-  PCU.initApp = function () {
+  PCU.initApp = async function () {
     updateNavForUser();
-    PCU.renderProfessorDirectory();
+    await PCU.fetchFaculty();
+    await PCU.renderProfessorDirectory();
     PCU.renderNotificationPanel();
     PCU.updateBellBadge();
   };
@@ -204,8 +205,6 @@
       await PCU.initDatabase();
       // Sync localStorage bookings to SQLite
       PCU.syncBookingsToDb();
-      // Load saved faculty schedules into PROFESSORS array
-      PCU.loadAllFacultySchedules();
       console.log('SQLite database ready. Users, Students & Faculty tables created.');
     } catch (err) {
       console.warn('SQLite initialization failed, using localStorage only:', err);

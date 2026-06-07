@@ -237,6 +237,7 @@
     html += '<div class="faculty-schedule-editor__list" id="faculty-hours-list">';
     hours.forEach(function (ch, idx) {
       html += '<div class="faculty-schedule-editor__row" data-index="' + idx + '">' +
+        '<input type="date" class="faculty-schedule-editor__date" data-index="' + idx + '" value="' + (ch.date || '') + '">' +
         '<select class="faculty-schedule-editor__select faculty-schedule-editor__day" data-index="' + idx + '">' +
           '<option value="Monday"' + (ch.day === 'Monday' ? ' selected' : '') + '>Monday</option>' +
           '<option value="Tuesday"' + (ch.day === 'Tuesday' ? ' selected' : '') + '>Tuesday</option>' +
@@ -349,17 +350,20 @@
         var list = document.getElementById('faculty-hours-list');
         if (!list) return;
         var idx = list.children.length;
+        var today = PCU.todayStr();
+        var dayName = PCU.getDayOfWeek(today);
         var row = document.createElement('div');
         row.className = 'faculty-schedule-editor__row';
         row.setAttribute('data-index', idx);
         row.innerHTML =
+          '<input type="date" class="faculty-schedule-editor__date" data-index="' + idx + '" value="' + today + '">' +
           '<select class="faculty-schedule-editor__select faculty-schedule-editor__day" data-index="' + idx + '">' +
-            '<option value="Monday">Monday</option>' +
-            '<option value="Tuesday">Tuesday</option>' +
-            '<option value="Wednesday">Wednesday</option>' +
-            '<option value="Thursday">Thursday</option>' +
-            '<option value="Friday">Friday</option>' +
-            '<option value="Saturday">Saturday</option>' +
+            '<option value="Monday"' + (dayName === 'Monday' ? ' selected' : '') + '>Monday</option>' +
+            '<option value="Tuesday"' + (dayName === 'Tuesday' ? ' selected' : '') + '>Tuesday</option>' +
+            '<option value="Wednesday"' + (dayName === 'Wednesday' ? ' selected' : '') + '>Wednesday</option>' +
+            '<option value="Thursday"' + (dayName === 'Thursday' ? ' selected' : '') + '>Thursday</option>' +
+            '<option value="Friday"' + (dayName === 'Friday' ? ' selected' : '') + '>Friday</option>' +
+            '<option value="Saturday"' + (dayName === 'Saturday' ? ' selected' : '') + '>Saturday</option>' +
           '</select>' +
           '<input type="time" class="faculty-schedule-editor__time" data-index="' + idx + '" data-field="start" value="09:00">' +
           '<span class="faculty-schedule-editor__separator">&ndash;</span>' +
@@ -370,6 +374,12 @@
         row.querySelector('.faculty-schedule-editor__remove').addEventListener('click', function () {
           row.remove();
         });
+        // Auto-update day when date changes
+        row.querySelector('.faculty-schedule-editor__date').addEventListener('change', function () {
+          var d = PCU.getDayOfWeek(this.value);
+          var daySelect = row.querySelector('.faculty-schedule-editor__day');
+          if (daySelect && d) daySelect.value = d;
+        });
       });
     }
 
@@ -377,6 +387,16 @@
     document.querySelectorAll('.faculty-schedule-editor__remove').forEach(function (btn) {
       btn.addEventListener('click', function () {
         btn.closest('.faculty-schedule-editor__row').remove();
+      });
+    });
+
+    // Date change auto-fills day for existing rows
+    document.querySelectorAll('.faculty-schedule-editor__date').forEach(function (dateInput) {
+      dateInput.addEventListener('change', function () {
+        var d = PCU.getDayOfWeek(this.value);
+        var row = this.closest('.faculty-schedule-editor__row');
+        var daySelect = row ? row.querySelector('.faculty-schedule-editor__day') : null;
+        if (daySelect && d) daySelect.value = d;
       });
     });
 
@@ -389,35 +409,44 @@
     }
   };
 
-  PCU.saveScheduleFromEditor = function () {
+  PCU.saveScheduleFromEditor = async function () {
     var faculty = PCU.currentFaculty;
     if (!faculty) return;
 
     var rows = document.querySelectorAll('.faculty-schedule-editor__row');
     var hours = [];
     rows.forEach(function (row) {
+      var date = row.querySelector('.faculty-schedule-editor__date').value;
       var day = row.querySelector('.faculty-schedule-editor__day').value;
       var start = row.querySelector('[data-field="start"]').value;
       var end = row.querySelector('[data-field="end"]').value;
-      if (day && start && end) {
-        hours.push({ day: day, start: start, end: end });
+      if (date && day && start && end) {
+        hours.push({ date: date, day: day, start: start, end: end });
       }
     });
 
     var bufferSelect = document.getElementById('faculty-buffer-time');
     var bufferTime = bufferSelect ? parseInt(bufferSelect.value) : 15;
 
+    // Save to API
+    var success = await PCU.saveConsultationHours(faculty.faculty_id, hours, bufferTime);
+
+    // Also save to localStorage as cache
     var schedule = { consultationHours: hours, bufferTime: bufferTime };
     PCU.saveFacultySchedule(faculty.faculty_id, schedule);
 
-    // Also update the PROFESSORS array in memory for booking conflict checks
+    // Update the PROFESSORS array in memory
     var prof = PCU.getProfessor(faculty.faculty_id);
     if (prof) {
       prof.consultationHours = hours;
       prof.bufferTime = bufferTime;
     }
 
-    alert('Schedule saved successfully!');
+    if (success) {
+      alert('Schedule saved successfully!');
+    } else {
+      alert('Schedule saved locally (API unavailable).');
+    }
     PCU.renderFacultyPortal();
   };
 
