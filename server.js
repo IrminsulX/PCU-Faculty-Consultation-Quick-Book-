@@ -136,7 +136,7 @@ function seedDemoData() {
 
     // Demo students
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['S20230056', 'Ana Marie Reyes', 'a.reyes@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Business Administration', '', 'BS Business Administration']);
+        ['S20230056', 'Ana Marie Reyes', 'a.reyes@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Business Administration and Accountancy', '', 'BS Business Administration']);
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         ['S20240023', 'Mark Andrew Lim', 'm.lim@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Informatics', '', 'BS Computer Science']);
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -144,7 +144,7 @@ function seedDemoData() {
 
     // Demo faculty (approved)
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['F001', 'Dr. Ricardo Dela Cruz', 'r.delacruz@pcu.edu.ph', 'faculty123', 'faculty', 'approved', 'College of Business Administration', 'Business Management', '']);
+        ['F001', 'Dr. Ricardo Dela Cruz', 'r.delacruz@pcu.edu.ph', 'faculty123', 'faculty', 'approved', 'College of Business Administration and Accountancy', 'Business Management', '']);
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         ['F002', 'Dr. Carlos Aguilar', 'c.aguilar@pcu.edu.ph', 'faculty123', 'faculty', 'approved', 'College of Informatics', 'Software Engineering', '']);
 }
@@ -317,13 +317,14 @@ app.get('/api/blacklist/check/:userId', (req, res) => {
 
 // --- Faculty ---
 const DEPT_COLORS = {
-    'College of Business Administration': '#1B3A6B',
+    'College of Arts and Sciences': '#6A1B9A',
+    'College of Business Administration and Accountancy': '#1B3A6B',
+    'College of Criminal Justice': '#4E342E',
     'College of Education': '#2E7D32',
-    'College of Computer Studies': '#1565C0',
     'College of Informatics': '#1565C0',
-    'College of Arts & Sciences': '#6A1B9A',
-    'College of Nursing': '#1A56DB',
-    'College of Engineering': '#E65100',
+    'College of Hospitality and Tourism Management': '#F57F17',
+    'College of Nursing and Health Sciences': '#1A56DB',
+    'College of Social Work': '#00796B',
     'College of Law': '#B71C1C',
     'Institute of Philosophy and Religious Studies': '#00695C',
     'Graduate School': '#4A148C'

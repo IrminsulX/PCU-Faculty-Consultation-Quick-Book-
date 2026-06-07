@@ -190,10 +190,77 @@
   PCU.initApp = async function () {
     updateNavForUser();
     await PCU.fetchFaculty();
+    populateFacultySelect();
+    populateFeaturedFaculty();
     await PCU.renderProfessorDirectory();
     PCU.renderNotificationPanel();
     PCU.updateBellBadge();
   };
+
+  // ─── Populate Faculty Select in Quick-Book Form ────
+  function populateFacultySelect() {
+    var select = document.getElementById('faculty-select');
+    if (!select) return;
+    select.innerHTML = '<option value="" disabled selected>&mdash; Choose a faculty member &mdash;</option>';
+
+    var deptMap = {};
+    PCU.PROFESSORS.forEach(function (p) {
+      if (!deptMap[p.department]) deptMap[p.department] = [];
+      deptMap[p.department].push(p);
+    });
+
+    Object.keys(deptMap).sort().forEach(function (dept) {
+      var group = document.createElement('optgroup');
+      group.label = dept;
+      deptMap[dept].forEach(function (p) {
+        var opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name + ' \u2013 ' + p.specialization;
+        group.appendChild(opt);
+      });
+      select.appendChild(group);
+    });
+  }
+
+  // ─── Populate Featured Faculty Sidebar ─────────────
+  function populateFeaturedFaculty() {
+    var container = document.querySelector('.featured-list');
+    if (!container) return;
+
+    var today = PCU.todayStr();
+    var dayName = PCU.getDayOfWeek(today);
+
+    var availableToday = PCU.PROFESSORS.filter(function (p) {
+      return p.consultationHours && p.consultationHours.some(function (ch) {
+        return ch.day === dayName;
+      });
+    }).slice(0, 3);
+
+    if (availableToday.length === 0 && PCU.PROFESSORS.length > 0) {
+      availableToday = PCU.PROFESSORS.slice(0, 3);
+    }
+
+    container.innerHTML = '';
+    availableToday.forEach(function (p) {
+      var isAvailToday = p.consultationHours && p.consultationHours.some(function (ch) {
+        return ch.day === dayName;
+      });
+      var badge = isAvailToday
+        ? '<span class="featured-item__badge">Available Today</span>'
+        : '<span class="featured-item__badge featured-item__badge--limited">View Profile</span>';
+
+      var item = document.createElement('div');
+      item.className = 'featured-item';
+      item.innerHTML =
+        '<div class="featured-item__avatar" style="background:' + p.color + '">' + p.initials + '</div>' +
+        '<div class="featured-item__info">' +
+          '<p class="featured-item__name">' + p.name + '</p>' +
+          '<p class="featured-item__dept">' + p.department + '</p>' +
+        '</div>' +
+        badge;
+      container.appendChild(item);
+    });
+  }
 
   // ─── Init ──────────────────────────────────────────
   PCU.init = async function () {

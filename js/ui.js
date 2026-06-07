@@ -251,9 +251,37 @@
     document.getElementById('modal-prof-avatar').textContent = prof.initials;
     document.getElementById('modal-prof-avatar').style.background = prof.color;
     document.getElementById('modal-prof-id').value = profId;
-    ['modal-student-name','modal-student-id','modal-student-email','modal-date','modal-purpose','modal-notes'].forEach(function (id) {
-      document.getElementById(id).value = '';
-    });
+
+    // Auto-fill student info from logged-in user
+    var nameInput = document.getElementById('modal-student-name');
+    var idInput = document.getElementById('modal-student-id');
+    var emailInput = document.getElementById('modal-student-email');
+
+    if (PCU.currentUser && PCU.currentUser.role === 'student') {
+      nameInput.value = PCU.currentUser.name || '';
+      idInput.value = (PCU.currentUser.user_id || '').replace(/^S/, '');
+      emailInput.value = PCU.currentUser.email || '';
+      nameInput.readOnly = true;
+      idInput.readOnly = true;
+      emailInput.readOnly = true;
+      nameInput.style.background = '#f0f0f0';
+      idInput.style.background = '#f0f0f0';
+      emailInput.style.background = '#f0f0f0';
+    } else {
+      nameInput.value = '';
+      idInput.value = '';
+      emailInput.value = '';
+      nameInput.readOnly = false;
+      idInput.readOnly = false;
+      emailInput.readOnly = false;
+      nameInput.style.background = '';
+      idInput.style.background = '';
+      emailInput.style.background = '';
+    }
+
+    document.getElementById('modal-date').value = '';
+    document.getElementById('modal-purpose').value = '';
+    document.getElementById('modal-notes').value = '';
     document.getElementById('modal-time-slots').innerHTML = '<p class="modal-time-hint">Select a date to view available time slots.</p>';
     document.getElementById('modal-feedback').innerHTML = '';
     document.getElementById('modal-feedback').style.display = 'none';
