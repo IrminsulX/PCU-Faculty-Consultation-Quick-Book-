@@ -2,3 +2,12 @@
 _debug/
 node_modules/
 *.log
+*.env
+.env
+.env.local
+.env.*.local
+.DS_Store
+Thumbs.db
+*.sqlite
+*.db-journal
+pcu_sqlite_db*

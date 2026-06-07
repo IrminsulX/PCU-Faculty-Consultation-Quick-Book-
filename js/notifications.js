@@ -19,6 +19,16 @@
     };
     PCU.notificationQueue.unshift(notif);
     PCU.saveNotifications();
+
+    // Save to SQLite database
+    if (PCU.dbReady && PCU.db) {
+      PCU.dbAddNotification({
+        id: notif.id, type: notif.type, title: notif.title, message: notif.message,
+        professorId: notif.professorId, professorName: notif.professorName,
+        timestamp: notif.timestamp, read: notif.read
+      });
+    }
+
     if (PCU.renderNotificationPanel) PCU.renderNotificationPanel();
     if (PCU.updateBellBadge) PCU.updateBellBadge();
     if (PCU.showToast) PCU.showToast(data.title, data.type);

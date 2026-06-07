@@ -21,9 +21,9 @@
     var date2 = d2.getFullYear() + '-' + String(d2.getMonth() + 1).padStart(2, '0') + '-' + String(d2.getDate()).padStart(2, '0');
 
     PCU.bookings.push(
-      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Ana Marie Reyes', studentId: '2023-005678', studentEmail: 'a.reyes@pcu.edu.ph', date: date1, startTime: '10:00', endTime: '10:30', purpose: 'Thesis proposal review', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Mark Andrew Lim', studentId: '2024-002345', studentEmail: 'm.lim@pcu.edu.ph', date: date1, startTime: '11:00', endTime: '11:30', purpose: 'Grade inquiry', consultationType: 'grade', mode: 'online', status: 'confirmed', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'aguilar', studentName: 'Jasmine Cruz', studentId: '2025-001122', studentEmail: 'j.cruz@pcu.edu.ph', date: date2, startTime: '14:00', endTime: '14:30', purpose: 'Capstone project guidance', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() }
+      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Ana Marie Reyes', studentId: '2023005678', studentEmail: 'a.reyes@pcu.edu.ph', date: date1, startTime: '10:00', endTime: '10:30', purpose: 'Thesis proposal review', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() },
+      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Mark Andrew Lim', studentId: '2024002345', studentEmail: 'm.lim@pcu.edu.ph', date: date1, startTime: '11:00', endTime: '11:30', purpose: 'Grade inquiry', consultationType: 'grade', mode: 'online', status: 'confirmed', createdAt: new Date().toISOString() },
+      { id: PCU.generateId(), professorId: 'aguilar', studentName: 'Jasmine Cruz', studentId: '2025001122', studentEmail: 'j.cruz@pcu.edu.ph', date: date2, startTime: '14:00', endTime: '14:30', purpose: 'Capstone project guidance', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() }
     );
     PCU.saveBookings();
 
@@ -90,6 +90,24 @@
       portalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openPortal(); });
     }
 
+    // Faculty Portal link
+    var facultyPortalLink = document.getElementById('faculty-portal-link');
+    if (facultyPortalLink) {
+      facultyPortalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openFacultyPortal(); });
+    }
+
+    // Admin Portal link
+    var adminPortalLink = document.getElementById('admin-portal-link');
+    if (adminPortalLink) {
+      adminPortalLink.addEventListener('click', function (e) { e.preventDefault(); PCU.openAdminPortal(); });
+    }
+
+    // Logout link
+    var logoutLink = document.getElementById('logout-link');
+    if (logoutLink) {
+      logoutLink.addEventListener('click', function (e) { e.preventDefault(); PCU.logout(); });
+    }
+
     // Help Desk link
     var helpdeskLink = document.getElementById('helpdesk-link');
     if (helpdeskLink) {
@@ -119,12 +137,38 @@
     var logoutBtn = document.getElementById('portal-logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', PCU.logoutStudent);
 
+    // Faculty Portal close
+    var facultyPortalClose = document.getElementById('faculty-portal-close');
+    if (facultyPortalClose) facultyPortalClose.addEventListener('click', PCU.closeFacultyPortal);
+
+    // Faculty Portal logout
+    var facultyLogoutBtn = document.getElementById('faculty-portal-logout-btn');
+    if (facultyLogoutBtn) facultyLogoutBtn.addEventListener('click', PCU.logoutFaculty);
+
+    // Admin Portal close
+    var adminPortalClose = document.getElementById('admin-portal-close');
+    if (adminPortalClose) adminPortalClose.addEventListener('click', PCU.closeAdminPortal);
+
+    // Admin Portal logout
+    var adminLogoutBtn = document.getElementById('admin-portal-logout-btn');
+    if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', function () { PCU.logout(); });
+
     // Escape key — close modals, portal, help desk
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         var portalOverlay = document.getElementById('portal-overlay');
         if (portalOverlay && portalOverlay.classList.contains('portal-overlay--open')) {
           PCU.closePortal();
+          return;
+        }
+        var facultyPortalOverlay = document.getElementById('faculty-portal-overlay');
+        if (facultyPortalOverlay && facultyPortalOverlay.classList.contains('portal-overlay--open')) {
+          PCU.closeFacultyPortal();
+          return;
+        }
+        var adminPortalOverlay = document.getElementById('admin-portal-overlay');
+        if (adminPortalOverlay && adminPortalOverlay.classList.contains('admin-portal-overlay--open')) {
+          PCU.closeAdminPortal();
           return;
         }
         var hdPanel = document.getElementById('helpdesk-panel');
@@ -137,13 +181,58 @@
     });
   }
 
-  // ─── Init ──────────────────────────────────────────
-  PCU.init = function () {
-    PCU.loadState();
-    seedDemoData();
+  // ─── Update Nav Based on User Role ────────────────
+  function updateNavForUser() {
+    var adminLink = document.getElementById('admin-portal-link');
+    var logoutLink = document.getElementById('logout-link');
+
+    if (PCU.currentUser) {
+      // Show logout link
+      if (logoutLink) logoutLink.style.display = '';
+
+      // Show admin link only for admin users
+      if (adminLink) {
+        adminLink.style.display = PCU.isAdmin() ? '' : 'none';
+      }
+    } else {
+      if (adminLink) adminLink.style.display = 'none';
+      if (logoutLink) logoutLink.style.display = 'none';
+    }
+  }
+
+  // ─── Init App (called after login) ───────────────
+  PCU.initApp = function () {
+    updateNavForUser();
     PCU.renderProfessorDirectory();
     PCU.renderNotificationPanel();
     PCU.updateBellBadge();
+  };
+
+  // ─── Init ──────────────────────────────────────────
+  PCU.init = async function () {
+    PCU.loadState();
+    seedDemoData();
+
+    // Initialize SQLite database
+    try {
+      await PCU.initDatabase();
+      // Sync localStorage bookings to SQLite
+      PCU.syncBookingsToDb();
+      console.log('SQLite database ready. Users, Students & Faculty tables created.');
+    } catch (err) {
+      console.warn('SQLite initialization failed, using localStorage only:', err);
+    }
+
+    // Initialize authentication
+    var isLoggedIn = PCU.initAuth();
+
+    if (isLoggedIn) {
+      PCU.showMainApp();
+      PCU.initApp();
+    } else {
+      PCU.hideMainApp();
+    }
+
     attachEventListeners();
   };
 

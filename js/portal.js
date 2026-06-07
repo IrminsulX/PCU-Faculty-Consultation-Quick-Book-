@@ -24,10 +24,30 @@
     studentId = studentId.trim(); email = email.trim().toLowerCase();
     if (!studentId || !email) return false;
 
-    // Find all bookings matching this student
+    // Validate Student ID format (10 digits)
+    if (!/^[0-9]{10}$/.test(studentId)) return false;
+
+    // Find all bookings matching this student (from localStorage)
     var matches = PCU.bookings.filter(function (b) {
       return b.studentId === studentId && b.studentEmail.toLowerCase() === email;
     });
+
+    // Also check SQLite database
+    if (PCU.dbReady && PCU.db) {
+      var dbBookings = PCU.dbGetBookingsByStudent(studentId);
+      dbBookings.forEach(function (db) {
+        var exists = matches.find(function (b) { return b.id === db.id; });
+        if (!exists && db.student_email && db.student_email.toLowerCase() === email) {
+          matches.push({
+            id: db.id, professorId: db.professor_id, studentId: db.student_id,
+            studentName: db.student_name, studentEmail: db.student_email,
+            date: db.date, startTime: db.start_time, endTime: db.end_time,
+            purpose: db.purpose, consultationType: db.consultation_type,
+            mode: db.mode, status: db.status, createdAt: db.created_at
+          });
+        }
+      });
+    }
 
     if (matches.length === 0) return false;
 
@@ -56,6 +76,11 @@
     if (!booking) return;
     booking.status = 'cancelled';
     PCU.saveBookings();
+
+    // Update in SQLite database
+    if (PCU.dbReady && PCU.db) {
+      PCU.dbUpdateBookingStatus(bookingId, 'cancelled');
+    }
 
     PCU.addNotification({
       type: 'info',
@@ -96,7 +121,7 @@
         '<p class="portal-login__subtitle">Enter your credentials to view your consultations.</p>' +
         '<form class="portal-login__form" id="portal-login-form">' +
           '<label class="portal-login__label">Student ID Number</label>' +
-          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 2024-001234" required>' +
+          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}">' +
           '<label class="portal-login__label">Email Address</label>' +
           '<input type="email" class="portal-login__input" id="portal-login-email" placeholder="your.email@pcu.edu.ph" required>' +
           '<p class="portal-login__error" id="portal-login-error">No matching student found. Check your ID and email.</p>' +
@@ -118,10 +143,29 @@
 
   PCU.renderPortalDashboard = function (body) {
     var s = PCU.currentStudent;
-    // Get this student's bookings, sorted by date descending
+    // Get this student's bookings from localStorage, sorted by date descending
     var myBookings = PCU.bookings
       .filter(function (b) { return b.studentId === s.studentId && b.studentEmail.toLowerCase() === s.studentEmail.toLowerCase(); })
       .sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+
+    // Also get from SQLite database
+    if (PCU.dbReady && PCU.db) {
+      var dbBookings = PCU.dbGetBookingsByStudent(s.studentId);
+      dbBookings.forEach(function (db) {
+        var exists = myBookings.find(function (b) { return b.id === db.id; });
+        if (!exists) {
+          myBookings.push({
+            id: db.id, professorId: db.professor_id, studentId: db.student_id,
+            studentName: db.student_name, studentEmail: db.student_email,
+            date: db.date, startTime: db.start_time, endTime: db.end_time,
+            purpose: db.purpose, consultationType: db.consultation_type,
+            mode: db.mode, status: db.status, createdAt: db.created_at
+          });
+        }
+      });
+      // Re-sort after merging
+      myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
+    }
 
     var upcoming = myBookings.filter(function (b) { return b.status === 'confirmed' && b.date >= PCU.todayStr(); });
     var past = myBookings.filter(function (b) { return b.status !== 'confirmed' || b.date < PCU.todayStr(); });

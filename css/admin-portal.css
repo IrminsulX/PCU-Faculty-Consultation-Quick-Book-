@@ -1,0 +1,191 @@
+/* ============================================
+   PCU Quick-Book — Admin Portal Styles
+   ============================================ */
+
+/* Admin Portal Overlay */
+.admin-portal-overlay {
+    position: fixed; top: 0; right: -100%;
+    width: 100%; height: 100%;
+    background: var(--pc-off-white);
+    z-index: 1700; transition: right 0.35s ease;
+    display: flex; flex-direction: column; overflow-y: auto;
+}
+.admin-portal-overlay--open { right: 0; }
+
+/* Admin Portal Header */
+.admin-portal-header {
+    background: linear-gradient(135deg, #B71C1C 0%, #7F0000 100%);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
+}
+.admin-portal-header__title { font-size: 1.2rem; font-weight: 700; }
+.admin-portal-header__user { font-size: 0.85rem; opacity: 0.9; }
+.admin-portal-header__actions { display: flex; gap: 0.8rem; align-items: center; }
+
+/* Admin Stats Grid */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.admin-stat-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--pc-border);
+    border-top: 3px solid var(--pc-maroon);
+}
+
+.admin-stat-card--success { border-top-color: var(--pc-success); }
+.admin-stat-card--warning { border-top-color: var(--pc-warning); }
+.admin-stat-card--danger { border-top-color: var(--pc-danger); }
+.admin-stat-card--info { border-top-color: var(--pc-gold); }
+
+.admin-stat-card__number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--pc-maroon);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+}
+
+.admin-stat-card--success .admin-stat-card__number { color: var(--pc-success); }
+.admin-stat-card--warning .admin-stat-card__number { color: var(--pc-warning); }
+.admin-stat-card--danger .admin-stat-card__number { color: var(--pc-danger); }
+.admin-stat-card--info .admin-stat-card__number { color: var(--pc-gold); }
+
+.admin-stat-card__label {
+    font-size: 0.8rem;
+    color: var(--pc-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Admin Section */
+.admin-section {
+    margin-bottom: 2rem;
+}
+
+.admin-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--pc-gold);
+    padding-bottom: 0.5rem;
+}
+
+.admin-section__title {
+    font-family: var(--font-accent);
+    font-size: 1.2rem;
+    color: var(--pc-maroon);
+}
+
+/* Admin Table */
+.admin-table-wrapper {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.9rem;
+}
+
+.admin-table th {
+    background: var(--pc-maroon);
+    color: white;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--pc-border);
+    color: var(--pc-text-secondary);
+}
+
+.admin-table tr:hover td {
+    background: var(--pc-off-white);
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Admin Status Badges */
+.admin-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-badge--approved { background: #E8F5E9; color: var(--pc-success); }
+.admin-badge--pending { background: #FFF3E0; color: #E65100; }
+.admin-badge--rejected { background: #FFEBEE; color: var(--pc-danger); }
+.admin-badge--admin { background: #F3E5F5; color: #6A1B9A; }
+.admin-badge--student { background: #E3F2FD; color: #1565C0; }
+.admin-badge--faculty { background: #E8F5E9; color: #2E7D32; }
+
+/* Admin Action Buttons */
+.admin-action-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-main);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.admin-action-btn--approve {
+    background: var(--pc-success);
+    color: white;
+}
+.admin-action-btn--approve:hover { background: #1B5E20; }
+
+.admin-action-btn--reject {
+    background: none;
+    color: var(--pc-danger);
+    border: 1px solid var(--pc-danger);
+}
+.admin-action-btn--reject:hover { background: var(--pc-danger); color: white; }
+
+.admin-action-btn--delete {
+    background: none;
+    color: var(--pc-danger);
+    border: 1px solid var(--pc-danger);
+}
+.admin-action-btn--delete:hover { background: var(--pc-danger); color: white; }
+
+/* Empty State */
+.admin-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--pc-text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}

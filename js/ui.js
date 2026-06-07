@@ -289,6 +289,10 @@
     var notes = document.getElementById('modal-notes').value.trim();
 
     if (!studentName || !studentId || !studentEmail || !date) { PCU.showFeedback('Please fill all required fields.', 'error'); return; }
+
+    // Validate Student ID format (10 digits)
+    if (!/^[0-9]{10}$/.test(studentId)) { PCU.showFeedback('Student ID must be exactly 10 digits (e.g., 202232946).', 'error'); return; }
+
     var radio = document.querySelector('input[name="modal_time_slot"]:checked');
     if (!radio) { PCU.showFeedback('Please select a time slot.', 'error'); return; }
     var times = radio.value.split('|');
@@ -365,6 +369,12 @@
     if (!studentName || !studentId || !studentEmail || !date || !profId || !slotRadio) {
       PCU.showToast('Please fill all required fields.', 'info'); return;
     }
+
+    // Validate Student ID format (10 digits)
+    if (!/^[0-9]{10}$/.test(studentId)) {
+      PCU.showToast('Student ID must be exactly 10 digits (e.g., 202232946).', 'info'); return;
+    }
+
     var times = slotRadio.value.split('-');
     var pad = function (t) { var p = t.split(':'); return String(p[0]).padStart(2,'0') + ':' + p[1]; };
 

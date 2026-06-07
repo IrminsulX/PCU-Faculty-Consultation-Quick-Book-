@@ -105,6 +105,18 @@
       PCU.bookings.push(declinedBooking);
       PCU.saveBookings();
 
+      // Save to SQLite database
+      if (PCU.dbReady && PCU.db) {
+        PCU.dbAddBooking({
+          id: declinedBooking.id, professorId: declinedBooking.professorId,
+          studentId: declinedBooking.studentId, studentName: declinedBooking.studentName,
+          studentEmail: declinedBooking.studentEmail, date: declinedBooking.date,
+          startTime: declinedBooking.startTime, endTime: declinedBooking.endTime,
+          purpose: declinedBooking.purpose, consultationType: declinedBooking.consultationType,
+          mode: declinedBooking.mode, status: declinedBooking.status
+        });
+      }
+
       PCU.addNotification({
         type: 'decline',
         title: 'Request Auto-Declined — Scheduling Conflict',
@@ -138,6 +150,18 @@
     };
     PCU.bookings.push(confirmedBooking);
     PCU.saveBookings();
+
+    // Save to SQLite database
+    if (PCU.dbReady && PCU.db) {
+      PCU.dbAddBooking({
+        id: confirmedBooking.id, professorId: confirmedBooking.professorId,
+        studentId: confirmedBooking.studentId, studentName: confirmedBooking.studentName,
+        studentEmail: confirmedBooking.studentEmail, date: confirmedBooking.date,
+        startTime: confirmedBooking.startTime, endTime: confirmedBooking.endTime,
+        purpose: confirmedBooking.purpose, consultationType: confirmedBooking.consultationType,
+        mode: confirmedBooking.mode, status: confirmedBooking.status
+      });
+    }
 
     PCU.addNotification({
       type: 'confirmation',
