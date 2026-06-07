@@ -252,7 +252,14 @@
       return { success: false, error: 'Please enter your credentials.' };
     }
 
+    // Try direct lookup first
     var user = PCU.dbAuthenticateUser(userId, password);
+
+    // If not found and input is 10 digits, try with 'S' prefix (student)
+    if (!user && /^[0-9]{10}$/.test(userId)) {
+      user = PCU.dbAuthenticateUser('S' + userId, password);
+    }
+
     if (!user) {
       return { success: false, error: 'Invalid credentials. Please check your ID and password.' };
     }
