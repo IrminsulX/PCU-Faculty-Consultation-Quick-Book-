@@ -106,6 +106,11 @@
     var logoutBtn = document.getElementById('portal-logout-btn');
     if (logoutBtn) logoutBtn.style.display = PCU.currentStudent ? 'inline-block' : 'none';
 
+    // Auto-login if user is already authenticated as student
+    if (!PCU.currentStudent && PCU.currentUser && PCU.currentUser.role === 'student') {
+      PCU.autoLoginStudent();
+    }
+
     if (!PCU.currentStudent) {
       PCU.renderPortalLogin(body);
     } else {
@@ -113,7 +118,28 @@
     }
   };
 
+  // ─── Auto-Login from Auth Session ────────────────
+  PCU.autoLoginStudent = function () {
+    var user = PCU.currentUser;
+    if (!user) return;
+
+    var studentId = user.user_id.replace(/^S/, ''); // Strip 'S' prefix
+    PCU.currentStudent = {
+      studentId: studentId,
+      studentName: user.name,
+      studentEmail: user.email,
+      initials: user.name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
+    };
+  };
+
   PCU.renderPortalLogin = function (body) {
+    var prefilledId = '';
+    var prefilledEmail = '';
+    if (PCU.currentUser && PCU.currentUser.role === 'student') {
+      prefilledId = PCU.currentUser.user_id.replace(/^S/, '');
+      prefilledEmail = PCU.currentUser.email;
+    }
+
     body.innerHTML =
       '<div class="portal-login">' +
         '<div class="portal-login__icon">\uD83C\uDF93</div>' +
@@ -121,9 +147,9 @@
         '<p class="portal-login__subtitle">Enter your credentials to view your consultations.</p>' +
         '<form class="portal-login__form" id="portal-login-form">' +
           '<label class="portal-login__label">Student ID Number</label>' +
-          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}">' +
+          '<input type="text" class="portal-login__input" id="portal-login-id" placeholder="e.g., 202232946" required maxlength="10" pattern="[0-9]{10}" value="' + prefilledId + '">' +
           '<label class="portal-login__label">Email Address</label>' +
-          '<input type="email" class="portal-login__input" id="portal-login-email" placeholder="your.email@pcu.edu.ph" required>' +
+          '<input type="email" class="portal-login__input" id="portal-login-email" placeholder="your.email@pcu.edu.ph" required value="' + prefilledEmail + '">' +
           '<p class="portal-login__error" id="portal-login-error">No matching student found. Check your ID and email.</p>' +
           '<button type="submit" class="portal-login__submit">Sign In</button>' +
         '</form>' +

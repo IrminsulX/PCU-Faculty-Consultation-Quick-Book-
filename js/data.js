@@ -69,5 +69,41 @@
   PCU.saveBookings = function () { localStorage.setItem('pcu_bookings', JSON.stringify(PCU.bookings)); };
   PCU.saveNotifications = function () { localStorage.setItem('pcu_notifications', JSON.stringify(PCU.notificationQueue)); };
 
+  // ─── Faculty Consultation Hours Persistence ───────
+  PCU.loadFacultySchedule = function (facultyId) {
+    try {
+      var data = JSON.parse(localStorage.getItem('pcu_faculty_schedule_' + facultyId));
+      if (data && data.consultationHours) return data;
+    } catch (e) {}
+    // Return default from professor catalog
+    var prof = PCU.getProfessor(facultyId);
+    return prof ? { consultationHours: prof.consultationHours.slice(), bufferTime: prof.bufferTime } : { consultationHours: [], bufferTime: 15 };
+  };
+
+  PCU.saveFacultySchedule = function (facultyId, schedule) {
+    localStorage.setItem('pcu_faculty_schedule_' + facultyId, JSON.stringify(schedule));
+  };
+
+  PCU.getEffectiveConsultationHours = function (facultyId) {
+    var schedule = PCU.loadFacultySchedule(facultyId);
+    return schedule.consultationHours || [];
+  };
+
+  PCU.getEffectiveBufferTime = function (facultyId) {
+    var schedule = PCU.loadFacultySchedule(facultyId);
+    return schedule.bufferTime || 15;
+  };
+
+  // ─── Load All Faculty Schedules on Init ───────────
+  PCU.loadAllFacultySchedules = function () {
+    PCU.PROFESSORS.forEach(function (prof) {
+      var schedule = PCU.loadFacultySchedule(prof.id);
+      if (schedule && schedule.consultationHours) {
+        prof.consultationHours = schedule.consultationHours;
+        prof.bufferTime = schedule.bufferTime || 15;
+      }
+    });
+  };
+
   window.PCU = PCU;
 })();

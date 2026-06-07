@@ -218,6 +218,8 @@
       await PCU.initDatabase();
       // Sync localStorage bookings to SQLite
       PCU.syncBookingsToDb();
+      // Load saved faculty schedules into PROFESSORS array
+      PCU.loadAllFacultySchedules();
       console.log('SQLite database ready. Users, Students & Faculty tables created.');
     } catch (err) {
       console.warn('SQLite initialization failed, using localStorage only:', err);

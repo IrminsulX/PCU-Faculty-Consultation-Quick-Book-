@@ -207,19 +207,53 @@
     }
     html += '</div>';
 
-    // Consultation Hours
-    if (prof) {
-      html += '<h3 class="portal-section-title">&#x1F550; Your Consultation Hours</h3>';
-      html += '<div class="faculty-schedule">';
-      prof.consultationHours.forEach(function (ch) {
-        html += '<div class="faculty-schedule__item">' +
-          '<span class="faculty-schedule__day">' + ch.day + '</span>' +
-          '<span class="faculty-schedule__time">' + PCU.formatTime12(ch.start) + ' &ndash; ' + PCU.formatTime12(ch.end) + '</span>' +
-          '<span class="faculty-schedule__buffer">Buffer: ' + prof.bufferTime + ' min</span>' +
-        '</div>';
-      });
-      html += '</div>';
-    }
+    // Consultation Hours (editable)
+    html += '<h3 class="portal-section-title">&#x1F550; Your Consultation Hours</h3>';
+    html += '<div class="faculty-schedule-editor" id="faculty-schedule-editor">';
+
+    var schedule = PCU.loadFacultySchedule(f.faculty_id);
+    var hours = schedule.consultationHours || [];
+    var bufferTime = schedule.bufferTime || 15;
+
+    // Buffer time setting
+    html += '<div class="faculty-schedule-editor__buffer">' +
+      '<label class="faculty-schedule-editor__label">Buffer Time Between Consultations:</label>' +
+      '<select class="faculty-schedule-editor__select" id="faculty-buffer-time">' +
+        '<option value="5"' + (bufferTime === 5 ? ' selected' : '') + '>5 minutes</option>' +
+        '<option value="10"' + (bufferTime === 10 ? ' selected' : '') + '>10 minutes</option>' +
+        '<option value="15"' + (bufferTime === 15 ? ' selected' : '') + '>15 minutes</option>' +
+        '<option value="20"' + (bufferTime === 20 ? ' selected' : '') + '>20 minutes</option>' +
+        '<option value="30"' + (bufferTime === 30 ? ' selected' : '') + '>30 minutes</option>' +
+      '</select>' +
+    '</div>';
+
+    // Existing consultation hours
+    html += '<div class="faculty-schedule-editor__list" id="faculty-hours-list">';
+    hours.forEach(function (ch, idx) {
+      html += '<div class="faculty-schedule-editor__row" data-index="' + idx + '">' +
+        '<select class="faculty-schedule-editor__select faculty-schedule-editor__day" data-index="' + idx + '">' +
+          '<option value="Monday"' + (ch.day === 'Monday' ? ' selected' : '') + '>Monday</option>' +
+          '<option value="Tuesday"' + (ch.day === 'Tuesday' ? ' selected' : '') + '>Tuesday</option>' +
+          '<option value="Wednesday"' + (ch.day === 'Wednesday' ? ' selected' : '') + '>Wednesday</option>' +
+          '<option value="Thursday"' + (ch.day === 'Thursday' ? ' selected' : '') + '>Thursday</option>' +
+          '<option value="Friday"' + (ch.day === 'Friday' ? ' selected' : '') + '>Friday</option>' +
+          '<option value="Saturday"' + (ch.day === 'Saturday' ? ' selected' : '') + '>Saturday</option>' +
+        '</select>' +
+        '<input type="time" class="faculty-schedule-editor__time" data-index="' + idx + '" data-field="start" value="' + ch.start + '">' +
+        '<span class="faculty-schedule-editor__separator">&ndash;</span>' +
+        '<input type="time" class="faculty-schedule-editor__time" data-index="' + idx + '" data-field="end" value="' + ch.end + '">' +
+        '<button type="button" class="faculty-schedule-editor__remove" data-index="' + idx + '" title="Remove">&#x2716;</button>' +
+      '</div>';
+    });
+    html += '</div>';
+
+    // Add new row button
+    html += '<button type="button" class="faculty-schedule-editor__add" id="faculty-add-hours-btn">+ Add Consultation Hours</button>';
+
+    // Save button
+    html += '<button type="button" class="faculty-schedule-editor__save" id="faculty-save-hours-btn">Save Schedule</button>';
+
+    html += '</div>';
 
     html += '</div>';
 
@@ -233,6 +267,9 @@
         PCU.handleFacultyAction(action, bookingId);
       });
     });
+
+    // Attach schedule editor listeners
+    PCU.attachScheduleEditorListeners();
   };
 
   PCU.renderFacultyBookingCard = function (b, showActions) {
@@ -291,6 +328,90 @@
       professorName: PCU.currentFaculty ? PCU.currentFaculty.name : ''
     });
 
+    PCU.renderFacultyPortal();
+  };
+
+  // ─── Schedule Editor Listeners ────────────────────
+  PCU.attachScheduleEditorListeners = function () {
+    var faculty = PCU.currentFaculty;
+    if (!faculty) return;
+
+    // Add hours button
+    var addBtn = document.getElementById('faculty-add-hours-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', function () {
+        var list = document.getElementById('faculty-hours-list');
+        if (!list) return;
+        var idx = list.children.length;
+        var row = document.createElement('div');
+        row.className = 'faculty-schedule-editor__row';
+        row.setAttribute('data-index', idx);
+        row.innerHTML =
+          '<select class="faculty-schedule-editor__select faculty-schedule-editor__day" data-index="' + idx + '">' +
+            '<option value="Monday">Monday</option>' +
+            '<option value="Tuesday">Tuesday</option>' +
+            '<option value="Wednesday">Wednesday</option>' +
+            '<option value="Thursday">Thursday</option>' +
+            '<option value="Friday">Friday</option>' +
+            '<option value="Saturday">Saturday</option>' +
+          '</select>' +
+          '<input type="time" class="faculty-schedule-editor__time" data-index="' + idx + '" data-field="start" value="09:00">' +
+          '<span class="faculty-schedule-editor__separator">&ndash;</span>' +
+          '<input type="time" class="faculty-schedule-editor__time" data-index="' + idx + '" data-field="end" value="12:00">' +
+          '<button type="button" class="faculty-schedule-editor__remove" data-index="' + idx + '" title="Remove">&#x2716;</button>';
+        list.appendChild(row);
+        // Attach remove listener
+        row.querySelector('.faculty-schedule-editor__remove').addEventListener('click', function () {
+          row.remove();
+        });
+      });
+    }
+
+    // Remove buttons (existing rows)
+    document.querySelectorAll('.faculty-schedule-editor__remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        btn.closest('.faculty-schedule-editor__row').remove();
+      });
+    });
+
+    // Save button
+    var saveBtn = document.getElementById('faculty-save-hours-btn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function () {
+        PCU.saveScheduleFromEditor();
+      });
+    }
+  };
+
+  PCU.saveScheduleFromEditor = function () {
+    var faculty = PCU.currentFaculty;
+    if (!faculty) return;
+
+    var rows = document.querySelectorAll('.faculty-schedule-editor__row');
+    var hours = [];
+    rows.forEach(function (row) {
+      var day = row.querySelector('.faculty-schedule-editor__day').value;
+      var start = row.querySelector('[data-field="start"]').value;
+      var end = row.querySelector('[data-field="end"]').value;
+      if (day && start && end) {
+        hours.push({ day: day, start: start, end: end });
+      }
+    });
+
+    var bufferSelect = document.getElementById('faculty-buffer-time');
+    var bufferTime = bufferSelect ? parseInt(bufferSelect.value) : 15;
+
+    var schedule = { consultationHours: hours, bufferTime: bufferTime };
+    PCU.saveFacultySchedule(faculty.faculty_id, schedule);
+
+    // Also update the PROFESSORS array in memory for booking conflict checks
+    var prof = PCU.getProfessor(faculty.faculty_id);
+    if (prof) {
+      prof.consultationHours = hours;
+      prof.bufferTime = bufferTime;
+    }
+
+    alert('Schedule saved successfully!');
     PCU.renderFacultyPortal();
   };
 
