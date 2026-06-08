@@ -132,7 +132,7 @@ function saveDatabase() {
 function seedDemoData() {
     // Admin
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['admin', 'System Administrator', 'admin@pcu.edu.ph', 'admin123', 'admin', 'approved', '', '', '']);
+        ['admin', 'System Administrator', 'admin@pcu.edu.ph', 'admin@pcu', 'admin', 'approved', '', '', '']);
 
     // Demo students
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",

@@ -344,7 +344,6 @@
             '<div class="auth-form__error" id="auth-login-error"></div>' +
             '<div class="auth-form__success" id="auth-login-success"></div>' +
             '<button type="submit" class="auth-form__submit">Sign In</button>' +
-            '<div class="auth-divider"><span class="auth-divider__text">Demo: admin / admin123</span></div>' +
           '</form>' +
           // Register Form
           '<form class="auth-form auth-form--hidden" data-auth-form="register" id="auth-register-form">' +

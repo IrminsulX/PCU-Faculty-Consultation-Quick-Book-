@@ -332,8 +332,8 @@
 
     if (!studentName || !studentId || !studentEmail || !date) { PCU.showFeedback('Please fill all required fields.', 'error'); return; }
 
-    // Validate Student ID format (10 digits)
-    if (!/^[0-9]{10}$/.test(studentId)) { PCU.showFeedback('Student ID must be exactly 10 digits (e.g., 202232946).', 'error'); return; }
+    // Validate Student ID format (9 digits)
+    if (!/^[0-9]{9}$/.test(studentId)) { PCU.showFeedback('Student ID must be exactly 9 digits (e.g., 20223294).', 'error'); return; }
 
     var radio = document.querySelector('input[name="modal_time_slot"]:checked');
     if (!radio) { PCU.showFeedback('Please select a time slot.', 'error'); return; }
@@ -412,9 +412,9 @@
       PCU.showToast('Please fill all required fields.', 'info'); return;
     }
 
-    // Validate Student ID format (10 digits)
-    if (!/^[0-9]{10}$/.test(studentId)) {
-      PCU.showToast('Student ID must be exactly 10 digits (e.g., 202232946).', 'info'); return;
+    // Validate Student ID format (9 digits)
+    if (!/^[0-9]{9}$/.test(studentId)) {
+      PCU.showToast('Student ID must be exactly 9 digits (e.g., 20223294).', 'info'); return;
     }
 
     var times = slotRadio.value.split('-');
