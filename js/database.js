@@ -467,7 +467,7 @@
     if (!PCU.db) return false;
     try {
       PCU.db.run(
-        "INSERT INTO bookings (id, professor_id, student_id, student_name, student_email, date, start_time, end_time, purpose, consultation_type, mode, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO bookings (id, professor_id, student_id, student_name, student_email, date, start_time, end_time, purpose, consultation_type, mode, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [booking.id, booking.professorId, booking.studentId, booking.studentName, booking.studentEmail,
          booking.date, booking.startTime, booking.endTime, booking.purpose || '',
          booking.consultationType || 'other', booking.mode || 'face-to-face', booking.status || 'confirmed']
@@ -534,7 +534,7 @@
     if (!PCU.db) return false;
     try {
       PCU.db.run(
-        "INSERT INTO notifications (id, type, title, message, professor_id, professor_name, student_id, student_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT OR REPLACE INTO notifications (id, type, title, message, professor_id, professor_name, student_id, student_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [notif.id, notif.type || 'info', notif.title || 'Notification', notif.message || '',
          notif.professorId || '', notif.professorName || '', notif.studentId || '', notif.studentName || '', notif.timestamp || new Date().toISOString(), notif.read ? 1 : 0]
       );

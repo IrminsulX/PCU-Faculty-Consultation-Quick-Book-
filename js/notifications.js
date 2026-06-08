@@ -14,19 +14,32 @@
       message: data.message || '',
       professorId: data.professorId || '',
       professorName: data.professorName || '',
+      studentId: data.studentId || '',
+      studentName: data.studentName || '',
       timestamp: new Date().toISOString(),
       read: false
     };
     PCU.notificationQueue.unshift(notif);
     PCU.saveNotifications();
 
-    // Save to SQLite database
+    // Save to local SQLite database
     if (PCU.dbReady && PCU.db) {
       PCU.dbAddNotification({
         id: notif.id, type: notif.type, title: notif.title, message: notif.message,
         professorId: notif.professorId, professorName: notif.professorName,
+        studentId: notif.studentId, studentName: notif.studentName,
         timestamp: notif.timestamp, read: notif.read
       });
+    }
+
+    // Save to server API so other portals can see it
+    if (PCU.apiCreateNotification) {
+      PCU.apiCreateNotification({
+        id: notif.id, type: notif.type, title: notif.title, message: notif.message,
+        professorId: notif.professorId, professorName: notif.professorName,
+        studentId: notif.studentId, studentName: notif.studentName,
+        timestamp: notif.timestamp, read: notif.read
+      }).catch(function () {});
     }
 
     if (PCU.renderNotificationPanel) PCU.renderNotificationPanel();
@@ -73,9 +86,21 @@
           '<span class="notif-item__time">' + PCU.timeAgo(n.timestamp) + '</span>' +
         '</div></div>';
     }).join('');
-    list.insertAdjacentHTML('beforeend', '<button class="notif-clear-btn" id="notif-clear-btn">Mark All as Read</button>');
+    list.insertAdjacentHTML('beforeend', '<button class="notif-clear-btn" id="notif-clear-btn">Mark All as Read</button><button class="notif-clear-btn notif-clear-btn--danger" id="notif-delete-all-btn">Clear All Notifications</button>');
     var btn = document.getElementById('notif-clear-btn');
     if (btn) btn.addEventListener('click', PCU.markAllRead);
+    var deleteBtn = document.getElementById('notif-delete-all-btn');
+    if (deleteBtn) deleteBtn.addEventListener('click', PCU.clearAllNotifications);
+  };
+
+  PCU.clearAllNotifications = async function () {
+    if (!confirm('Delete all notifications? This cannot be undone.')) return;
+    PCU.notificationQueue = [];
+    if (PCU.apiDeleteAllNotifications) {
+      PCU.apiDeleteAllNotifications().catch(function () {});
+    }
+    if (PCU.renderNotificationPanel) PCU.renderNotificationPanel();
+    if (PCU.updateBellBadge) PCU.updateBellBadge();
   };
 
   PCU.updateBellBadge = function () {

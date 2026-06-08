@@ -87,8 +87,15 @@
     };
 
     // Notifications API
-    PCU.apiGetNotifications = function () {
-        return PCU.api('GET', '/api/notifications');
+    PCU.apiGetNotifications = function (filters) {
+        var url = '/api/notifications';
+        if (filters) {
+            var params = [];
+            if (filters.professorId) params.push('professor_id=' + encodeURIComponent(filters.professorId));
+            if (filters.studentId) params.push('student_id=' + encodeURIComponent(filters.studentId));
+            if (params.length > 0) url += '?' + params.join('&');
+        }
+        return PCU.api('GET', url);
     };
 
     PCU.apiCreateNotification = function (notif) {
@@ -97,6 +104,14 @@
 
     PCU.apiMarkAllRead = function () {
         return PCU.api('PUT', '/api/notifications/read');
+    };
+
+    PCU.apiClearOldNotifications = function () {
+        return PCU.api('POST', '/api/notifications/clear-old');
+    };
+
+    PCU.apiDeleteAllNotifications = function () {
+        return PCU.api('DELETE', '/api/notifications');
     };
 
     // Stats API

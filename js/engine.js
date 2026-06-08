@@ -110,7 +110,7 @@
       PCU.bookings.push(declinedBooking);
       PCU.saveBookings();
 
-      // Save to SQLite database
+      // Save to local SQLite database
       if (PCU.dbReady && PCU.db) {
         PCU.dbAddBooking({
           id: declinedBooking.id, professorId: declinedBooking.professorId,
@@ -122,6 +122,18 @@
         });
       }
 
+      // Save to server API so faculty portal can see it
+      if (PCU.apiCreateBooking) {
+        PCU.apiCreateBooking({
+          id: declinedBooking.id, professorId: declinedBooking.professorId,
+          studentId: declinedBooking.studentId, studentName: declinedBooking.studentName,
+          studentEmail: declinedBooking.studentEmail, date: declinedBooking.date,
+          startTime: declinedBooking.startTime, endTime: declinedBooking.endTime,
+          purpose: declinedBooking.purpose, consultationType: declinedBooking.consultationType,
+          mode: declinedBooking.mode, status: declinedBooking.status
+        }).catch(function () {});
+      }
+
       PCU.addNotification({
         type: 'decline',
         title: 'Request Auto-Declined — Scheduling Conflict',
@@ -129,7 +141,7 @@
           ' auto-declined. Conflicts with ' + conflictResult.conflictingBooking.studentName +
           ' (' + PCU.formatTime12(conflictResult.conflictingBooking.startTime) + '–' +
           PCU.formatTime12(conflictResult.conflictingBooking.endTime) + '). Buffer: ' + prof.bufferTime + ' min.',
-        professorId: data.professorId, professorName: prof.name,
+        professorId: '', professorName: prof.name,
         studentId: data.studentId, studentName: data.studentName || ''
       });
 
@@ -144,41 +156,64 @@
       };
     }
 
-    // No conflict — confirm
-    var confirmedBooking = {
+    // No conflict — create pending request for faculty approval
+    var pendingBooking = {
       id: PCU.generateId(), professorId: data.professorId,
       studentName: data.studentName || 'Unknown', studentId: data.studentId || '',
       studentEmail: data.studentEmail || '', date: date,
       startTime: startTime, endTime: endTime,
       purpose: data.purpose || '', consultationType: data.consultationType || 'other',
-      mode: data.mode || 'face-to-face', status: 'confirmed',
+      mode: data.mode || 'face-to-face', status: 'pending',
       createdAt: new Date().toISOString()
     };
-    PCU.bookings.push(confirmedBooking);
+    PCU.bookings.push(pendingBooking);
     PCU.saveBookings();
 
-    // Save to SQLite database
+    // Save to local SQLite database
     if (PCU.dbReady && PCU.db) {
       PCU.dbAddBooking({
-        id: confirmedBooking.id, professorId: confirmedBooking.professorId,
-        studentId: confirmedBooking.studentId, studentName: confirmedBooking.studentName,
-        studentEmail: confirmedBooking.studentEmail, date: confirmedBooking.date,
-        startTime: confirmedBooking.startTime, endTime: confirmedBooking.endTime,
-        purpose: confirmedBooking.purpose, consultationType: confirmedBooking.consultationType,
-        mode: confirmedBooking.mode, status: confirmedBooking.status
+        id: pendingBooking.id, professorId: pendingBooking.professorId,
+        studentId: pendingBooking.studentId, studentName: pendingBooking.studentName,
+        studentEmail: pendingBooking.studentEmail, date: pendingBooking.date,
+        startTime: pendingBooking.startTime, endTime: pendingBooking.endTime,
+        purpose: pendingBooking.purpose, consultationType: pendingBooking.consultationType,
+        mode: pendingBooking.mode, status: pendingBooking.status
       });
     }
 
+    // Save to server API so faculty portal can see it
+    if (PCU.apiCreateBooking) {
+      PCU.apiCreateBooking({
+        id: pendingBooking.id, professorId: pendingBooking.professorId,
+        studentId: pendingBooking.studentId, studentName: pendingBooking.studentName,
+        studentEmail: pendingBooking.studentEmail, date: pendingBooking.date,
+        startTime: pendingBooking.startTime, endTime: pendingBooking.endTime,
+        purpose: pendingBooking.purpose, consultationType: pendingBooking.consultationType,
+        mode: pendingBooking.mode, status: pendingBooking.status
+      }).catch(function () {});
+    }
+
+    // Notify student that request is pending (student only)
     PCU.addNotification({
-      type: 'confirmation',
-      title: 'Booking Confirmed',
-      message: 'Consultation with ' + prof.name + ' on ' + PCU.formatDate(date) +
+      type: 'request',
+      title: 'Booking Request Sent',
+      message: 'Your consultation request with ' + prof.name + ' on ' + PCU.formatDate(date) +
         ' at ' + PCU.formatTime12(startTime) + '–' + PCU.formatTime12(endTime) +
-        ' confirmed. Buffer: ' + prof.bufferTime + ' min.',
-      professorId: data.professorId, professorName: prof.name,
+        ' is pending faculty approval.',
+      professorId: '', professorName: prof.name,
       studentId: data.studentId, studentName: data.studentName || ''
     });
 
-    return { success: true, booking: confirmedBooking };
+    // Notify faculty of the new request (faculty only)
+    PCU.addNotification({
+      type: 'request',
+      title: 'New Consultation Request',
+      message: (data.studentName || 'A student') + ' has requested a consultation on ' + PCU.formatDate(date) +
+        ' at ' + PCU.formatTime12(startTime) + '–' + PCU.formatTime12(endTime) + '. Please review.',
+      professorId: data.professorId, professorName: prof.name,
+      studentId: '', studentName: data.studentName || ''
+    });
+
+    return { success: true, booking: pendingBooking };
   };
 })();

@@ -72,6 +72,11 @@
     background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FC 100%);
 }
 
+/* Pending Booking Card */
+.portal-booking-card--pending {
+    border-left-color: var(--pc-gold);
+}
+
 /* Faculty Action Buttons */
 .faculty-action-btn {
     padding: 0.55rem 1rem;
@@ -99,6 +104,25 @@
     border: 1px solid var(--pc-danger);
 }
 .faculty-action-btn--cancel:hover {
+    background: var(--pc-danger);
+    color: white;
+}
+
+.faculty-action-btn--approve {
+    background: var(--pc-success);
+    color: white;
+}
+.faculty-action-btn--approve:hover {
+    background: #1B5E20;
+    box-shadow: var(--shadow-md);
+}
+
+.faculty-action-btn--decline {
+    background: none;
+    color: var(--pc-danger);
+    border: 1px solid var(--pc-danger);
+}
+.faculty-action-btn--decline:hover {
     background: var(--pc-danger);
     color: white;
 }

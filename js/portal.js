@@ -88,12 +88,17 @@
       PCU.dbUpdateBookingStatus(bookingId, 'cancelled');
     }
 
+    // Update on server API so faculty portal sees it
+    if (PCU.apiUpdateBookingStatus) {
+      PCU.apiUpdateBookingStatus(bookingId, 'cancelled').catch(function () {});
+    }
+
     PCU.addNotification({
       type: 'info',
       title: 'Booking Cancelled',
       message: 'Your consultation with ' + (PCU.getProfessor(booking.professorId) || {}).name + ' on ' +
         PCU.formatDate(booking.date) + ' at ' + PCU.formatTime12(booking.startTime) + ' has been cancelled.',
-      professorId: booking.professorId,
+      professorId: '',
       professorName: (PCU.getProfessor(booking.professorId) || {}).name || '',
       studentId: booking.studentId, studentName: booking.studentName || ''
     });
@@ -103,7 +108,7 @@
   };
 
   // ─── Render Portal ─────────────────────────────────
-  PCU.renderPortal = function () {
+  PCU.renderPortal = async function () {
     var body = document.getElementById('portal-body');
     if (!body) return;
 
@@ -121,7 +126,7 @@
     if (!PCU.currentStudent) {
       PCU.renderPortalLogin(body);
     } else {
-      PCU.renderPortalDashboard(body);
+      await PCU.renderPortalDashboard(body);
     }
   };
 
@@ -174,12 +179,38 @@
     });
   };
 
-  PCU.renderPortalDashboard = function (body) {
+  PCU.renderPortalDashboard = async function (body) {
     var s = PCU.currentStudent;
     // Get this student's bookings from localStorage, sorted by date descending
     var myBookings = PCU.bookings
       .filter(function (b) { return b.studentId === s.studentId && b.studentEmail.toLowerCase() === s.studentEmail.toLowerCase(); })
       .sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+
+    // Fetch bookings from server API
+    if (PCU.apiGetBookingsByStudent) {
+      try {
+        var rawBookings = await PCU.apiGetBookingsByStudent(s.studentId);
+        if (Array.isArray(rawBookings)) {
+          rawBookings.forEach(function (db) {
+            var mapped = {
+              id: db.id, professorId: db.professor_id, studentId: db.student_id,
+              studentName: db.student_name, studentEmail: db.student_email,
+              date: db.date, startTime: db.start_time, endTime: db.end_time,
+              purpose: db.purpose, consultationType: db.consultation_type,
+              mode: db.mode, status: db.status, createdAt: db.created_at
+            };
+            var exists = myBookings.find(function (b) { return b.id === mapped.id; });
+            if (exists) {
+              exists.status = mapped.status;
+            } else {
+              myBookings.push(mapped);
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to fetch bookings from server:', e);
+      }
+    }
 
     // Also get from SQLite database
     if (PCU.dbReady && PCU.db) {
@@ -196,17 +227,41 @@
           });
         }
       });
-      // Re-sort after merging
-      myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
     }
+    // Re-sort after merging
+    myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
 
-    var upcoming = myBookings.filter(function (b) { return b.status === 'confirmed' && b.date >= PCU.todayStr(); });
-    var past = myBookings.filter(function (b) { return b.status !== 'confirmed' || b.date < PCU.todayStr(); });
+    var upcoming = myBookings.filter(function (b) { return (b.status === 'confirmed' || b.status === 'pending') && b.date >= PCU.todayStr(); });
+    var pending = myBookings.filter(function (b) { return b.status === 'pending'; });
+    var past = myBookings.filter(function (b) { return b.status !== 'confirmed' && b.status !== 'pending' || b.date < PCU.todayStr(); });
 
-    // Student's notifications (filter by studentId)
+    // Student's notifications (only show notifications targeted to student)
     var myNotifs = PCU.notificationQueue.filter(function (n) {
-      return n.studentId === s.studentId;
+      return n.studentId === s.studentId && !n.professorId;
     });
+
+    // Also fetch from server API (only student's notifications)
+    if (PCU.apiGetNotifications) {
+      try {
+        var serverNotifs = await PCU.apiGetNotifications({ studentId: s.studentId });
+        if (Array.isArray(serverNotifs)) {
+          serverNotifs.forEach(function (sn) {
+            var exists = myNotifs.find(function (n) { return n.id === sn.id; });
+            if (!exists) {
+              myNotifs.push({
+                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+                professorId: sn.professor_id, professorName: sn.professor_name,
+                studentId: sn.student_id || '', studentName: sn.student_name || '',
+                timestamp: sn.timestamp, read: sn.read
+              });
+            }
+          });
+          myNotifs.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+        }
+      } catch (e) {
+        console.warn('Failed to fetch notifications from server:', e);
+      }
+    }
 
     var html =
       '<div class="portal-dashboard">' +
@@ -215,11 +270,11 @@
           '<div class="portal-student-details">' +
             '<p class="portal-student-name">' + s.studentName + '</p>' +
             '<p class="portal-student-meta"><span>\uD83C\uDF93 ID: ' + s.studentId + '</span><span>\uD83D\uDCE7 ' + s.studentEmail + '</span></p>' +
-            '<p class="portal-student-meta"><span>Total bookings: ' + myBookings.length + '</span><span>Upcoming: ' + upcoming.length + '</span></p>' +
+            '<p class="portal-student-meta"><span>Total bookings: ' + myBookings.length + '</span><span>Upcoming: ' + upcoming.length + '</span><span>Pending: ' + pending.length + '</span></p>' +
           '</div>' +
         '</div>';
 
-    // Upcoming section
+    // Upcoming section (includes pending and confirmed)
     html += '<h3 class="portal-section-title">\uD83D\uDCC5 Upcoming Consultations</h3>';
     html += '<div class="portal-booking-list">';
     if (upcoming.length === 0) {
@@ -227,6 +282,7 @@
     } else {
       upcoming.forEach(function (b) {
         var prof = PCU.getProfessor(b.professorId);
+        var statusLabel = b.status === 'pending' ? 'Pending Approval' : 'Confirmed';
         html +=
           '<div class="portal-booking-card portal-booking-card--' + b.status + '">' +
             '<div class="portal-booking-info">' +
@@ -235,7 +291,7 @@
                 PCU.formatTime12(b.startTime) + '\u2013' + PCU.formatTime12(b.endTime) + ' \u2022 ' + (b.mode || 'face-to-face') + '</p>' +
               '<p class="portal-booking-detail">' + (b.purpose || '') + '</p>' +
             '</div>' +
-            '<span class="portal-booking-status portal-booking-status--' + b.status + '">' + b.status.charAt(0).toUpperCase() + b.status.slice(1) + '</span>' +
+            '<span class="portal-booking-status portal-booking-status--' + b.status + '">' + statusLabel + '</span>' +
             '<div class="portal-booking-actions">' +
               '<button class="portal-cancel-btn" data-booking-id="' + b.id + '">Cancel</button>' +
             '</div>' +

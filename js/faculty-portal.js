@@ -55,7 +55,7 @@
   };
 
   // ─── Render Faculty Portal ───────────────────────
-  PCU.renderFacultyPortal = function () {
+  PCU.renderFacultyPortal = async function () {
     var body = document.getElementById('faculty-portal-body');
     if (!body) return;
 
@@ -67,7 +67,7 @@
     if (!PCU.currentFaculty) {
       PCU.renderFacultyLogin(body);
     } else {
-      PCU.renderFacultyDashboard(body);
+      await PCU.renderFacultyDashboard(body);
     }
   };
 
@@ -100,40 +100,76 @@
     });
   };
 
-  PCU.renderFacultyDashboard = function (body) {
+  PCU.renderFacultyDashboard = async function (body) {
     var f = PCU.currentFaculty;
 
     // Find matching professor in the catalog
     var prof = null;
     var profCatalog = PCU.PROFESSORS || [];
     for (var i = 0; i < profCatalog.length; i++) {
-      if (profCatalog[i].email === f.email || profCatalog[i].name === f.name) {
+      if (profCatalog[i].id === f.faculty_id || profCatalog[i].email === f.email || profCatalog[i].name === f.name) {
         prof = profCatalog[i];
         break;
       }
     }
 
-    // Get bookings from both localStorage and SQLite
+    // Fetch bookings from server API
+    var serverBookings = [];
+    if (prof && PCU.apiGetBookingsByProfessor) {
+      try {
+        var rawBookings = await PCU.apiGetBookingsByProfessor(prof.id);
+        if (Array.isArray(rawBookings)) {
+          serverBookings = rawBookings.map(function (db) {
+            return {
+              id: db.id, professorId: db.professor_id, studentId: db.student_id,
+              studentName: db.student_name, studentEmail: db.student_email,
+              date: db.date, startTime: db.start_time, endTime: db.end_time,
+              purpose: db.purpose, consultationType: db.consultation_type,
+              mode: db.mode, status: db.status, createdAt: db.created_at
+            };
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to fetch bookings from server:', e);
+      }
+    }
+
+    // Get bookings from localStorage
     var myBookings = PCU.bookings.filter(function (b) {
       return prof ? b.professorId === prof.id : false;
     }).sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
 
-    // Also get from SQLite
+    // Merge: add server bookings not already in localStorage
+    serverBookings.forEach(function (sb) {
+      var exists = myBookings.find(function (b) { return b.id === sb.id; });
+      if (!exists) {
+        myBookings.push(sb);
+      }
+    });
+
+    // Also get from local SQLite
     if (prof) {
-      var dbBookings = PCU.dbGetBookingsByProfessor(prof.id);
-      dbBookings.forEach(function (db) {
-        var exists = myBookings.find(function (b) { return b.id === db.id; });
-        if (!exists) {
-          myBookings.push({
-            id: db.id, professorId: db.professor_id, studentId: db.student_id,
-            studentName: db.student_name, studentEmail: db.student_email,
-            date: db.date, startTime: db.start_time, endTime: db.end_time,
-            purpose: db.purpose, consultationType: db.consultation_type,
-            mode: db.mode, status: db.status, createdAt: db.created_at
-          });
-        }
-      });
+      try {
+        var dbBookings = PCU.dbGetBookingsByProfessor(prof.id);
+        dbBookings.forEach(function (db) {
+          var exists = myBookings.find(function (b) { return b.id === db.id; });
+          if (!exists) {
+            myBookings.push({
+              id: db.id, professorId: db.professor_id, studentId: db.student_id,
+              studentName: db.student_name, studentEmail: db.student_email,
+              date: db.date, startTime: db.start_time, endTime: db.end_time,
+              purpose: db.purpose, consultationType: db.consultation_type,
+              mode: db.mode, status: db.status, createdAt: db.created_at
+            });
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to fetch bookings from local database:', e);
+      }
     }
+
+    // Re-sort after merging
+    myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
 
     var upcoming = myBookings.filter(function (b) { return b.status === 'confirmed' && b.date >= PCU.todayStr(); });
     var pending = myBookings.filter(function (b) { return b.status === 'pending'; });
@@ -163,13 +199,13 @@
         '<div class="faculty-stat-card__number">' + totalBookings + '</div>' +
         '<div class="faculty-stat-card__label">Total Bookings</div>' +
       '</div>' +
+      '<div class="faculty-stat-card faculty-stat-card--warning">' +
+        '<div class="faculty-stat-card__number">' + pending.length + '</div>' +
+        '<div class="faculty-stat-card__label">Pending</div>' +
+      '</div>' +
       '<div class="faculty-stat-card faculty-stat-card--success">' +
         '<div class="faculty-stat-card__number">' + confirmed.length + '</div>' +
         '<div class="faculty-stat-card__label">Confirmed</div>' +
-      '</div>' +
-      '<div class="faculty-stat-card faculty-stat-card--warning">' +
-        '<div class="faculty-stat-card__number">' + upcoming.length + '</div>' +
-        '<div class="faculty-stat-card__label">Upcoming</div>' +
       '</div>' +
       '<div class="faculty-stat-card faculty-stat-card--danger">' +
         '<div class="faculty-stat-card__number">' + declined.length + '</div>' +
@@ -177,43 +213,7 @@
       '</div>' +
     '</div>';
 
-    // Today's Schedule
-    html += '<h3 class="portal-section-title">&#x1F4C5; Today\'s Schedule (' + PCU.formatDate(PCU.todayStr()) + ')</h3>';
-    html += '<div class="portal-booking-list">';
-    if (todayBookings.length === 0) {
-      html += '<p class="portal-empty">No consultations scheduled for today.</p>';
-    } else {
-      todayBookings.forEach(function (b) {
-        html += PCU.renderFacultyBookingCard(b);
-      });
-    }
-    html += '</div>';
-
-    // Upcoming section
-    html += '<h3 class="portal-section-title">&#x1F525; Upcoming Consultations</h3>';
-    html += '<div class="portal-booking-list">';
-    if (upcoming.length === 0) {
-      html += '<p class="portal-empty">No upcoming consultations.</p>';
-    } else {
-      upcoming.forEach(function (b) {
-        html += PCU.renderFacultyBookingCard(b, true);
-      });
-    }
-    html += '</div>';
-
-    // All Bookings section
-    html += '<h3 class="portal-section-title">&#x1F4CB; All Bookings</h3>';
-    html += '<div class="portal-booking-list">';
-    if (myBookings.length === 0) {
-      html += '<p class="portal-empty">No bookings found.</p>';
-    } else {
-      myBookings.slice(0, 20).forEach(function (b) {
-        html += PCU.renderFacultyBookingCard(b, true);
-      });
-    }
-    html += '</div>';
-
-    // Consultation Hours (editable)
+    // Consultation Hours (editable) — shown first
     html += '<h3 class="portal-section-title">&#x1F550; Your Consultation Hours</h3>';
     html += '<div class="faculty-schedule-editor" id="faculty-schedule-editor">';
 
@@ -262,10 +262,82 @@
 
     html += '</div>';
 
-    // Faculty's notifications (filter by professorId)
+    // Pending Requests section
+    html += '<h3 class="portal-section-title">&#x1F4E9; Pending Requests (' + pending.length + ')</h3>';
+    html += '<div class="portal-booking-list">';
+    if (pending.length === 0) {
+      html += '<p class="portal-empty">No pending requests.</p>';
+    } else {
+      pending.forEach(function (b) {
+        html += PCU.renderFacultyBookingCard(b, true);
+      });
+    }
+    html += '</div>';
+
+    // Today's Schedule
+    html += '<h3 class="portal-section-title">&#x1F4C5; Today\'s Schedule (' + PCU.formatDate(PCU.todayStr()) + ')</h3>';
+    html += '<div class="portal-booking-list">';
+    if (todayBookings.length === 0) {
+      html += '<p class="portal-empty">No consultations scheduled for today.</p>';
+    } else {
+      todayBookings.forEach(function (b) {
+        html += PCU.renderFacultyBookingCard(b);
+      });
+    }
+    html += '</div>';
+
+    // Upcoming section
+    html += '<h3 class="portal-section-title">&#x1F525; Upcoming Consultations</h3>';
+    html += '<div class="portal-booking-list">';
+    if (upcoming.length === 0) {
+      html += '<p class="portal-empty">No upcoming consultations.</p>';
+    } else {
+      upcoming.forEach(function (b) {
+        html += PCU.renderFacultyBookingCard(b, true);
+      });
+    }
+    html += '</div>';
+
+    // All Bookings section
+    html += '<h3 class="portal-section-title">&#x1F4CB; All Bookings</h3>';
+    html += '<div class="portal-booking-list">';
+    if (myBookings.length === 0) {
+      html += '<p class="portal-empty">No bookings found.</p>';
+    } else {
+      myBookings.slice(0, 20).forEach(function (b) {
+        html += PCU.renderFacultyBookingCard(b, true);
+      });
+    }
+    html += '</div>';
+
+    // Faculty's notifications — fetch from server API and merge with local
     var myNotifs = PCU.notificationQueue.filter(function (n) {
-      return n.professorId && prof && n.professorId === prof.id;
+      return n.professorId && prof && n.professorId === prof.id && !n.studentId;
     });
+
+    // Also fetch from server API (only faculty's notifications)
+    if (PCU.apiGetNotifications) {
+      try {
+        var serverNotifs = await PCU.apiGetNotifications({ professorId: prof.id });
+        if (Array.isArray(serverNotifs)) {
+          serverNotifs.forEach(function (sn) {
+            var exists = myNotifs.find(function (n) { return n.id === sn.id; });
+            if (!exists) {
+              myNotifs.push({
+                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+                professorId: sn.professor_id, professorName: sn.professor_name,
+                studentId: sn.student_id || '', studentName: sn.student_name || '',
+                timestamp: sn.timestamp, read: sn.read
+              });
+            }
+          });
+          // Re-sort after merging
+          myNotifs.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+        }
+      } catch (e) {
+        console.warn('Failed to fetch notifications from server:', e);
+      }
+    }
     html += '<h3 class="portal-section-title">&#x1F514; Your Notifications</h3>';
     html += '<div class="portal-notif-list">';
     if (myNotifs.length === 0) {
@@ -314,7 +386,10 @@
 
     if (showActions) {
       html += '<div class="portal-booking-actions">';
-      if (b.status === 'confirmed' && b.date >= PCU.todayStr()) {
+      if (b.status === 'pending') {
+        html += '<button class="faculty-action-btn faculty-action-btn--approve" data-action="approve" data-booking-id="' + b.id + '">Approve</button>';
+        html += '<button class="faculty-action-btn faculty-action-btn--decline" data-action="decline" data-booking-id="' + b.id + '">Decline</button>';
+      } else if (b.status === 'confirmed' && b.date >= PCU.todayStr()) {
         html += '<button class="faculty-action-btn faculty-action-btn--complete" data-action="complete" data-booking-id="' + b.id + '">Complete</button>';
         html += '<button class="faculty-action-btn faculty-action-btn--cancel" data-action="cancel" data-booking-id="' + b.id + '">Cancel</button>';
       }
@@ -325,36 +400,98 @@
     return html;
   };
 
-  PCU.handleFacultyAction = function (action, bookingId) {
-    var confirmMsg = action === 'cancel'
-      ? 'Are you sure you want to cancel this consultation?'
-      : 'Mark this consultation as completed?';
+  PCU.handleFacultyAction = async function (action, bookingId) {
+    if (action === 'approve') {
+      if (!confirm('Approve this consultation request?')) return;
+    } else if (action === 'decline') {
+      if (!confirm('Decline this consultation request?')) return;
+    } else if (action === 'cancel') {
+      if (!confirm('Are you sure you want to cancel this consultation?')) return;
+    } else {
+      if (!confirm('Mark this consultation as completed?')) return;
+    }
 
-    if (!confirm(confirmMsg)) return;
+    var newStatus;
+    if (action === 'approve') newStatus = 'confirmed';
+    else if (action === 'decline') newStatus = 'declined';
+    else if (action === 'cancel') newStatus = 'cancelled';
+    else newStatus = 'completed';
 
-    var newStatus = action === 'cancel' ? 'cancelled' : 'completed';
+    // Find booking from all sources
+    var booking = PCU.bookings.find(function (b) { return b.id === bookingId; });
+
+    // Also search server API if not found locally
+    if (!booking && PCU.currentFaculty && PCU.apiGetBookingsByProfessor) {
+      try {
+        var prof = PCU.getProfessor(PCU.currentFaculty.faculty_id);
+        if (prof) {
+          var serverBookings = await PCU.apiGetBookingsByProfessor(prof.id);
+          if (Array.isArray(serverBookings)) {
+            var found = serverBookings.find(function (db) { return db.id === bookingId; });
+            if (found) {
+              booking = {
+                id: found.id, professorId: found.professor_id, studentId: found.student_id,
+                studentName: found.student_name, studentEmail: found.student_email,
+                date: found.date, startTime: found.start_time, endTime: found.end_time,
+                purpose: found.purpose, consultationType: found.consultation_type,
+                mode: found.mode, status: found.status, createdAt: found.created_at
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch booking from server:', e);
+      }
+    }
+
     PCU.dbUpdateBookingStatus(bookingId, newStatus);
 
+    // Also update on server API
+    if (PCU.apiUpdateBookingStatus) {
+      PCU.apiUpdateBookingStatus(bookingId, newStatus).catch(function () {});
+    }
+
     // Also update in localStorage
-    var booking = PCU.bookings.find(function (b) { return b.id === bookingId; });
     if (booking) {
       booking.status = newStatus;
       PCU.saveBookings();
     }
 
-    // Add notification
-    var notifType = action === 'cancel' ? 'decline' : 'confirmation';
-    var notifTitle = action === 'cancel' ? 'Consultation Cancelled' : 'Consultation Completed';
-    var notifMsg = action === 'cancel'
-      ? 'You have cancelled the consultation with ' + (booking ? booking.studentName : 'student') + ' on ' + PCU.formatDate(booking ? booking.date : '') + '.'
-      : 'Consultation with ' + (booking ? booking.studentName : 'student') + ' on ' + PCU.formatDate(booking ? booking.date : '') + ' has been completed.';
+    var dateStr = (booking && booking.date) ? PCU.formatDate(booking.date) : 'the scheduled date';
+    var timeStr = (booking && booking.startTime) ? PCU.formatTime12(booking.startTime) : '';
+    var studentName = (booking && booking.studentName) ? booking.studentName : 'the student';
+    var profName = PCU.currentFaculty ? PCU.currentFaculty.name : 'faculty';
 
-    PCU.addNotification({
-      type: notifType, title: notifTitle, message: notifMsg,
-      professorId: booking ? booking.professorId : '',
-      professorName: PCU.currentFaculty ? PCU.currentFaculty.name : '',
-      studentId: booking ? booking.studentId : '', studentName: booking ? booking.studentName : ''
-    });
+    // Send notification to student about the decision (student only)
+    if (action === 'approve') {
+      PCU.addNotification({
+        type: 'confirmation',
+        title: 'Booking Approved',
+        message: 'Your consultation with ' + profName + ' on ' + dateStr + ' at ' + timeStr + ' has been approved.',
+        professorId: '', professorName: profName,
+        studentId: booking ? booking.studentId : '', studentName: studentName
+      });
+    } else if (action === 'decline') {
+      PCU.addNotification({
+        type: 'decline',
+        title: 'Booking Declined',
+        message: 'Your consultation with ' + profName + ' on ' + dateStr + ' at ' + timeStr + ' has been declined.',
+        professorId: '', professorName: profName,
+        studentId: booking ? booking.studentId : '', studentName: studentName
+      });
+    } else {
+      var notifType = action === 'cancel' ? 'decline' : 'confirmation';
+      var notifTitle = action === 'cancel' ? 'Consultation Cancelled' : 'Consultation Completed';
+      var notifMsg = action === 'cancel'
+        ? 'Your consultation with ' + profName + ' on ' + dateStr + ' has been cancelled.'
+        : 'Your consultation with ' + profName + ' on ' + dateStr + ' has been completed.';
+
+      PCU.addNotification({
+        type: notifType, title: notifTitle, message: notifMsg,
+        professorId: '', professorName: profName,
+        studentId: booking ? booking.studentId : '', studentName: studentName
+      });
+    }
 
     PCU.renderFacultyPortal();
   };

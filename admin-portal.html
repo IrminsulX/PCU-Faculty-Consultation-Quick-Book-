@@ -69,6 +69,11 @@
                 return;
             }
 
+            // Clear old notifications with both IDs set
+            if (PCU.apiClearOldNotifications) {
+                PCU.apiClearOldNotifications().catch(function () {});
+            }
+
             var result = await PCU.apiCheckSession(sessionId);
             if (!result.valid || result.user.role !== 'admin') {
                 showLogin();
@@ -78,9 +83,8 @@
             PCU.currentUser = result.user;
             PCU.renderAdminPortal();
 
-            document.getElementById('admin-portal-logout-btn').addEventListener('click', function() {
-                PCU.logout();
-                window.location.href = 'login.html';
+            document.getElementById('admin-portal-logout-btn').addEventListener('click', async function() {
+                await PCU.logout();
             });
         }
 

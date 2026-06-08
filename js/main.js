@@ -22,8 +22,8 @@
 
     PCU.bookings.push(
       { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Ana Marie Reyes', studentId: '2023005678', studentEmail: 'a.reyes@pcu.edu.ph', date: date1, startTime: '10:00', endTime: '10:30', purpose: 'Thesis proposal review', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Mark Andrew Lim', studentId: '2024002345', studentEmail: 'm.lim@pcu.edu.ph', date: date1, startTime: '11:00', endTime: '11:30', purpose: 'Grade inquiry', consultationType: 'grade', mode: 'online', status: 'confirmed', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'aguilar', studentName: 'Jasmine Cruz', studentId: '2025001122', studentEmail: 'j.cruz@pcu.edu.ph', date: date2, startTime: '14:00', endTime: '14:30', purpose: 'Capstone project guidance', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() }
+      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Mark Andrew Lim', studentId: '2024002345', studentEmail: 'm.lim@pcu.edu.ph', date: date1, startTime: '11:00', endTime: '11:30', purpose: 'Grade inquiry', consultationType: 'grade', mode: 'online', status: 'pending', createdAt: new Date().toISOString() },
+      { id: PCU.generateId(), professorId: 'aguilar', studentName: 'Jasmine Cruz', studentId: '2025001122', studentEmail: 'j.cruz@pcu.edu.ph', date: date2, startTime: '14:00', endTime: '14:30', purpose: 'Capstone project guidance', consultationType: 'thesis', mode: 'face-to-face', status: 'pending', createdAt: new Date().toISOString() }
     );
     PCU.saveBookings();
 
@@ -213,6 +213,36 @@
     populateFeaturedFaculty();
     autoFillStudentInfo();
     await PCU.renderProfessorDirectory();
+
+    // Fetch notifications from server API filtered by logged-in user
+    if (PCU.apiGetNotifications && PCU.currentUser) {
+      try {
+        var filters = {};
+        if (PCU.currentUser.role === 'student') {
+          filters.studentId = (PCU.currentUser.user_id || '').replace(/^S/, '');
+        } else if (PCU.currentUser.role === 'faculty') {
+          filters.professorId = PCU.currentUser.user_id;
+        }
+        var serverNotifs = await PCU.apiGetNotifications(filters);
+        if (Array.isArray(serverNotifs)) {
+          serverNotifs.forEach(function (sn) {
+            var exists = PCU.notificationQueue.find(function (n) { return n.id === sn.id; });
+            if (!exists) {
+              PCU.notificationQueue.push({
+                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+                professorId: sn.professor_id, professorName: sn.professor_name,
+                studentId: sn.student_id || '', studentName: sn.student_name || '',
+                timestamp: sn.timestamp, read: sn.read
+              });
+            }
+          });
+          PCU.notificationQueue.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+        }
+      } catch (e) {
+        console.warn('Failed to fetch notifications from server:', e);
+      }
+    }
+
     PCU.renderNotificationPanel();
     PCU.updateBellBadge();
   };
@@ -327,6 +357,17 @@
     } catch (err) {
       console.warn('SQLite initialization failed, using localStorage only:', err);
     }
+
+    // Clear old notifications that have both professor_id and student_id set
+    if (PCU.apiClearOldNotifications) {
+      PCU.apiClearOldNotifications().catch(function () {});
+    }
+
+    // Also clear from localStorage
+    PCU.notificationQueue = PCU.notificationQueue.filter(function (n) {
+      return !n.professorId || !n.studentId;
+    });
+    PCU.saveNotifications();
 
     // Initialize authentication
     var isLoggedIn = await PCU.initAuth();

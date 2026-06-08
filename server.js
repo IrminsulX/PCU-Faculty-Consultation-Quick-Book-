@@ -416,7 +416,26 @@ app.put('/api/bookings/:id/status', (req, res) => {
 
 // --- Notifications ---
 app.get('/api/notifications', (req, res) => {
-    const notifs = dbAll("SELECT * FROM notifications ORDER BY timestamp DESC");
+    const { professor_id, student_id } = req.query;
+    let sql = "SELECT * FROM notifications";
+    const params = [];
+    const conditions = [];
+
+    if (professor_id) {
+        conditions.push("professor_id = ?");
+        params.push(professor_id);
+    }
+    if (student_id) {
+        conditions.push("student_id = ?");
+        params.push(student_id);
+    }
+
+    if (conditions.length > 0) {
+        sql += " WHERE " + conditions.join(" AND ");
+    }
+    sql += " ORDER BY timestamp DESC";
+
+    const notifs = dbAll(sql, params);
     res.json(notifs);
 });
 
@@ -438,15 +457,30 @@ app.put('/api/notifications/read', (req, res) => {
     res.json({ success: true });
 });
 
+// Clear old notifications that have both professor_id and student_id set
+app.post('/api/notifications/clear-old', (req, res) => {
+    db.run("DELETE FROM notifications WHERE professor_id != '' AND student_id != ''");
+    saveDatabase();
+    res.json({ success: true });
+});
+
+// Delete all notifications
+app.delete('/api/notifications', (req, res) => {
+    db.run("DELETE FROM notifications");
+    saveDatabase();
+    res.json({ success: true });
+});
+
 // --- Stats ---
 app.get('/api/stats', (req, res) => {
     const students = db.exec("SELECT COUNT(*) FROM users WHERE role='student'")[0]?.values[0][0] || 0;
     const faculty = db.exec("SELECT COUNT(*) FROM users WHERE role='faculty'")[0]?.values[0][0] || 0;
     const bookings = db.exec("SELECT COUNT(*) FROM bookings")[0]?.values[0][0] || 0;
     const confirmed = db.exec("SELECT COUNT(*) FROM bookings WHERE status='confirmed'")[0]?.values[0][0] || 0;
+    const pending = db.exec("SELECT COUNT(*) FROM bookings WHERE status='pending'")[0]?.values[0][0] || 0;
     const declined = db.exec("SELECT COUNT(*) FROM bookings WHERE status='declined'")[0]?.values[0][0] || 0;
     const cancelled = db.exec("SELECT COUNT(*) FROM bookings WHERE status='cancelled'")[0]?.values[0][0] || 0;
-    res.json({ students, faculty, bookings, confirmed, declined, cancelled });
+    res.json({ students, faculty, bookings, confirmed, pending, declined, cancelled });
 });
 
 // --- Reset Database (keep Admin, re-seed demo data) ---
