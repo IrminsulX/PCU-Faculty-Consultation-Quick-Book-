@@ -26,47 +26,40 @@
   };
 
   // ─── Login ─────────────────────────────────────────
-  PCU.loginStudent = function (studentId, email) {
+  PCU.loginStudent = async function (studentId, email) {
     studentId = studentId.trim(); email = email.trim().toLowerCase();
     if (!studentId || !email) return false;
 
     // Validate Student ID format (9 digits)
     if (!/^[0-9]{9}$/.test(studentId)) return false;
 
-    // Find all bookings matching this student (from localStorage)
-    var matches = PCU.bookings.filter(function (b) {
-      return b.studentId === studentId && b.studentEmail.toLowerCase() === email;
-    });
-
-    // Also check SQLite database
-    if (PCU.dbReady && PCU.db) {
-      var dbBookings = PCU.dbGetBookingsByStudent(studentId);
-      dbBookings.forEach(function (db) {
-        var exists = matches.find(function (b) { return b.id === db.id; });
-        if (!exists && db.student_email && db.student_email.toLowerCase() === email) {
-          matches.push({
-            id: db.id, professorId: db.professor_id, studentId: db.student_id,
-            studentName: db.student_name, studentEmail: db.student_email,
-            date: db.date, startTime: db.start_time, endTime: db.end_time,
-            purpose: db.purpose, consultationType: db.consultation_type,
-            mode: db.mode, status: db.status, createdAt: db.created_at
+    // Fetch bookings from server API to verify student
+    var matches = [];
+    if (PCU.apiGetBookingsByStudent) {
+      try {
+        var rawBookings = await PCU.apiGetBookingsByStudent(studentId);
+        if (Array.isArray(rawBookings)) {
+          matches = rawBookings.filter(function (b) {
+            return b.student_email && b.student_email.toLowerCase() === email;
           });
         }
-      });
+      } catch (e) {
+        console.warn('Failed to fetch bookings from server:', e);
+      }
     }
 
     if (matches.length === 0) return false;
 
     // Build student profile from most recent booking
     var latest = matches.reduce(function (a, b) {
-      return new Date(b.createdAt) > new Date(a.createdAt) ? b : a;
+      return new Date(b.created_at) > new Date(a.created_at) ? b : a;
     });
 
     PCU.currentStudent = {
-      studentId: latest.studentId,
-      studentName: latest.studentName,
-      studentEmail: latest.studentEmail,
-      initials: latest.studentName.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
+      studentId: latest.student_id,
+      studentName: latest.student_name,
+      studentEmail: latest.student_email,
+      initials: latest.student_name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
     };
     return true;
   };
@@ -77,18 +70,31 @@
   };
 
   // ─── Cancel Booking ────────────────────────────────
-  PCU.cancelBooking = function (bookingId) {
-    var booking = PCU.bookings.find(function (b) { return b.id === bookingId; });
-    if (!booking) return;
-    booking.status = 'cancelled';
-    PCU.saveBookings();
-
-    // Update in SQLite database
-    if (PCU.dbReady && PCU.db) {
-      PCU.dbUpdateBookingStatus(bookingId, 'cancelled');
+  PCU.cancelBooking = async function (bookingId) {
+    // Fetch booking from server API
+    var booking = null;
+    if (PCU.currentStudent && PCU.apiGetBookingsByStudent) {
+      try {
+        var rawBookings = await PCU.apiGetBookingsByStudent(PCU.currentStudent.studentId);
+        if (Array.isArray(rawBookings)) {
+          var found = rawBookings.find(function (b) { return b.id === bookingId; });
+          if (found) {
+            booking = {
+              id: found.id, professorId: found.professor_id, studentId: found.student_id,
+              studentName: found.student_name, studentEmail: found.student_email,
+              date: found.date, startTime: found.start_time, endTime: found.end_time,
+              purpose: found.purpose, consultationType: found.consultation_type,
+              mode: found.mode, status: found.status, createdAt: found.created_at
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch booking from server:', e);
+      }
     }
+    if (!booking) return;
 
-    // Update on server API so faculty portal sees it
+    // Update on server API
     if (PCU.apiUpdateBookingStatus) {
       PCU.apiUpdateBookingStatus(bookingId, 'cancelled').catch(function () {});
     }
@@ -167,11 +173,11 @@
         '</form>' +
       '</div>';
 
-    document.getElementById('portal-login-form').addEventListener('submit', function (e) {
+    document.getElementById('portal-login-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       var sid = document.getElementById('portal-login-id').value;
       var sem = document.getElementById('portal-login-email').value;
-      if (PCU.loginStudent(sid, sem)) {
+      if (await PCU.loginStudent(sid, sem)) {
         PCU.renderPortal();
       } else {
         document.getElementById('portal-login-error').style.display = 'block';
@@ -181,80 +187,45 @@
 
   PCU.renderPortalDashboard = async function (body) {
     var s = PCU.currentStudent;
-    // Get this student's bookings from localStorage, sorted by date descending
-    var myBookings = PCU.bookings
-      .filter(function (b) { return b.studentId === s.studentId && b.studentEmail.toLowerCase() === s.studentEmail.toLowerCase(); })
-      .sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
-
-    // Fetch bookings from server API
+    // Fetch bookings from server API only
+    var myBookings = [];
     if (PCU.apiGetBookingsByStudent) {
       try {
         var rawBookings = await PCU.apiGetBookingsByStudent(s.studentId);
         if (Array.isArray(rawBookings)) {
-          rawBookings.forEach(function (db) {
-            var mapped = {
+          myBookings = rawBookings.map(function (db) {
+            return {
               id: db.id, professorId: db.professor_id, studentId: db.student_id,
               studentName: db.student_name, studentEmail: db.student_email,
               date: db.date, startTime: db.start_time, endTime: db.end_time,
               purpose: db.purpose, consultationType: db.consultation_type,
               mode: db.mode, status: db.status, createdAt: db.created_at
             };
-            var exists = myBookings.find(function (b) { return b.id === mapped.id; });
-            if (exists) {
-              exists.status = mapped.status;
-            } else {
-              myBookings.push(mapped);
-            }
           });
         }
       } catch (e) {
         console.warn('Failed to fetch bookings from server:', e);
       }
     }
-
-    // Also get from SQLite database
-    if (PCU.dbReady && PCU.db) {
-      var dbBookings = PCU.dbGetBookingsByStudent(s.studentId);
-      dbBookings.forEach(function (db) {
-        var exists = myBookings.find(function (b) { return b.id === db.id; });
-        if (!exists) {
-          myBookings.push({
-            id: db.id, professorId: db.professor_id, studentId: db.student_id,
-            studentName: db.student_name, studentEmail: db.student_email,
-            date: db.date, startTime: db.start_time, endTime: db.end_time,
-            purpose: db.purpose, consultationType: db.consultation_type,
-            mode: db.mode, status: db.status, createdAt: db.created_at
-          });
-        }
-      });
-    }
-    // Re-sort after merging
-    myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
+    myBookings.sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
 
     var upcoming = myBookings.filter(function (b) { return (b.status === 'confirmed' || b.status === 'pending') && b.date >= PCU.todayStr(); });
     var pending = myBookings.filter(function (b) { return b.status === 'pending'; });
     var past = myBookings.filter(function (b) { return b.status !== 'confirmed' && b.status !== 'pending' || b.date < PCU.todayStr(); });
 
-    // Student's notifications (only show notifications targeted to student)
-    var myNotifs = PCU.notificationQueue.filter(function (n) {
-      return n.studentId === s.studentId && !n.professorId;
-    });
-
-    // Also fetch from server API (only student's notifications)
+    // Student's notifications — fetch from server API only
+    var myNotifs = [];
     if (PCU.apiGetNotifications) {
       try {
         var serverNotifs = await PCU.apiGetNotifications({ studentId: s.studentId });
         if (Array.isArray(serverNotifs)) {
-          serverNotifs.forEach(function (sn) {
-            var exists = myNotifs.find(function (n) { return n.id === sn.id; });
-            if (!exists) {
-              myNotifs.push({
-                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
-                professorId: sn.professor_id, professorName: sn.professor_name,
-                studentId: sn.student_id || '', studentName: sn.student_name || '',
-                timestamp: sn.timestamp, read: sn.read
-              });
-            }
+          myNotifs = serverNotifs.map(function (sn) {
+            return {
+              id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+              professorId: sn.professor_id, professorName: sn.professor_name,
+              studentId: sn.student_id || '', studentName: sn.student_name || '',
+              timestamp: sn.timestamp, read: sn.read
+            };
           });
           myNotifs.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
         }
@@ -343,9 +314,9 @@
 
     // Attach cancel listeners
     body.querySelectorAll('.portal-cancel-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', async function () {
         if (confirm('Cancel this consultation?')) {
-          PCU.cancelBooking(this.getAttribute('data-booking-id'));
+          await PCU.cancelBooking(this.getAttribute('data-booking-id'));
         }
       });
     });

@@ -66,14 +66,7 @@
 
         async function init() {
             try {
-                PCU.loadState();
-                try { await PCU.initDatabase(); } catch(e) {}
                 await PCU.fetchFaculty();
-
-                // Clear old notifications with both IDs set
-                if (PCU.apiClearOldNotifications) {
-                    PCU.apiClearOldNotifications().catch(function () {});
-                }
 
                 var sessionId = localStorage.getItem('pcu_session_id');
                 if (!sessionId) {

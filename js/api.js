@@ -102,16 +102,20 @@
         return PCU.api('POST', '/api/notifications', notif);
     };
 
-    PCU.apiMarkAllRead = function () {
-        return PCU.api('PUT', '/api/notifications/read');
+    PCU.apiMarkAllRead = function (studentId, professorId) {
+        return PCU.api('PUT', '/api/notifications/read', { student_id: studentId || '', professor_id: professorId || '' });
     };
 
     PCU.apiClearOldNotifications = function () {
         return PCU.api('POST', '/api/notifications/clear-old');
     };
 
-    PCU.apiDeleteAllNotifications = function () {
-        return PCU.api('DELETE', '/api/notifications');
+    PCU.apiDeleteAllNotifications = function (studentId, professorId) {
+        var params = [];
+        if (studentId) params.push('student_id=' + encodeURIComponent(studentId));
+        if (professorId) params.push('professor_id=' + encodeURIComponent(professorId));
+        var qs = params.length > 0 ? '?' + params.join('&') : '';
+        return PCU.api('DELETE', '/api/notifications' + qs);
     };
 
     // Stats API

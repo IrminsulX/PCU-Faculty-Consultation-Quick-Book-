@@ -132,23 +132,9 @@ function saveDatabase() {
 }
 
 function seedDemoData() {
-    // Admin
+    // Admin only
     db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         ['admin', 'System Administrator', 'admin@pcu.edu.ph', 'admin@pcu', 'admin', 'approved', '', '', '']);
-
-    // Demo students
-    db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['S20230056', 'Ana Marie Reyes', 'a.reyes@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Business Administration and Accountancy', '', 'BS Business Administration']);
-    db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['S20240023', 'Mark Andrew Lim', 'm.lim@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Informatics', '', 'BS Computer Science']);
-    db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['S20250011', 'Jasmine Cruz', 'j.cruz@pcu.edu.ph', 'student123', 'student', 'approved', 'College of Education', '', 'BS Education']);
-
-    // Demo faculty (approved)
-    db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['F001', 'Dr. Ricardo Dela Cruz', 'r.delacruz@pcu.edu.ph', 'faculty123', 'faculty', 'approved', 'College of Business Administration and Accountancy', 'Business Management', '']);
-    db.run("INSERT INTO users (user_id, name, email, password, role, status, department, specialization, course) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        ['F002', 'Dr. Carlos Aguilar', 'c.aguilar@pcu.edu.ph', 'faculty123', 'faculty', 'approved', 'College of Informatics', 'Software Engineering', '']);
 }
 
 // Helper: run query and return rows
@@ -422,11 +408,11 @@ app.get('/api/notifications', (req, res) => {
     const conditions = [];
 
     if (professor_id) {
-        conditions.push("professor_id = ?");
+        conditions.push("professor_id = ? AND (student_id = '' OR student_id IS NULL)");
         params.push(professor_id);
     }
     if (student_id) {
-        conditions.push("student_id = ?");
+        conditions.push("student_id = ? AND (professor_id = '' OR professor_id IS NULL)");
         params.push(student_id);
     }
 
@@ -452,7 +438,24 @@ app.post('/api/notifications', (req, res) => {
 });
 
 app.put('/api/notifications/read', (req, res) => {
-    db.run("UPDATE notifications SET read = 1");
+    const { professor_id, student_id } = req.body || {};
+    let sql = "UPDATE notifications SET read = 1";
+    const params = [];
+    const conditions = [];
+
+    if (professor_id) {
+        conditions.push("professor_id = ? AND (student_id = '' OR student_id IS NULL)");
+        params.push(professor_id);
+    }
+    if (student_id) {
+        conditions.push("student_id = ? AND (professor_id = '' OR professor_id IS NULL)");
+        params.push(student_id);
+    }
+
+    if (conditions.length > 0) {
+        sql += " WHERE " + conditions.join(" AND ");
+    }
+    db.run(sql, params);
     saveDatabase();
     res.json({ success: true });
 });
@@ -464,9 +467,26 @@ app.post('/api/notifications/clear-old', (req, res) => {
     res.json({ success: true });
 });
 
-// Delete all notifications
+// Delete notifications (scoped to user if professor_id or student_id provided)
 app.delete('/api/notifications', (req, res) => {
-    db.run("DELETE FROM notifications");
+    const { professor_id, student_id } = req.query;
+    let sql = "DELETE FROM notifications";
+    const params = [];
+    const conditions = [];
+
+    if (professor_id) {
+        conditions.push("professor_id = ? AND (student_id = '' OR student_id IS NULL)");
+        params.push(professor_id);
+    }
+    if (student_id) {
+        conditions.push("student_id = ? AND (professor_id = '' OR professor_id IS NULL)");
+        params.push(student_id);
+    }
+
+    if (conditions.length > 0) {
+        sql += " WHERE " + conditions.join(" AND ");
+    }
+    db.run(sql, params);
     saveDatabase();
     res.json({ success: true });
 });
@@ -483,11 +503,11 @@ app.get('/api/stats', (req, res) => {
     res.json({ students, faculty, bookings, confirmed, pending, declined, cancelled });
 });
 
-// --- Reset Database (keep Admin, re-seed demo data) ---
+// --- Reset Database (re-seed all demo data) ---
 app.post('/api/reset', (req, res) => {
     if (!db) return res.json({ success: false, error: 'Database not ready.' });
 
-    // Delete all data except admin user
+    // Delete all data
     db.run("DELETE FROM consultation_hours");
     db.run("DELETE FROM bookings");
     db.run("DELETE FROM notifications");
@@ -495,7 +515,7 @@ app.post('/api/reset', (req, res) => {
     db.run("DELETE FROM id_blacklist");
     db.run("DELETE FROM students");
     db.run("DELETE FROM faculty");
-    db.run("DELETE FROM users WHERE user_id != 'admin'");
+    db.run("DELETE FROM users");
 
     // Re-seed demo data
     seedDemoData();

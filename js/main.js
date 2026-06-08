@@ -9,29 +9,7 @@
 
   // ─── Seed Demo Data ────────────────────────────────
   function seedDemoData() {
-    if (localStorage.getItem('pcu_seeded')) return;
-    localStorage.setItem('pcu_seeded', '1');
-
-    var d1 = new Date(); d1.setDate(d1.getDate() + 1);
-    while (d1.getDay() === 0 || d1.getDay() === 6) d1.setDate(d1.getDate() + 1);
-    var date1 = d1.getFullYear() + '-' + String(d1.getMonth() + 1).padStart(2, '0') + '-' + String(d1.getDate()).padStart(2, '0');
-
-    var d2 = new Date(); d2.setDate(d2.getDate() + 2);
-    while (d2.getDay() === 0 || d2.getDay() === 6) d2.setDate(d2.getDate() + 1);
-    var date2 = d2.getFullYear() + '-' + String(d2.getMonth() + 1).padStart(2, '0') + '-' + String(d2.getDate()).padStart(2, '0');
-
-    PCU.bookings.push(
-      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Ana Marie Reyes', studentId: '2023005678', studentEmail: 'a.reyes@pcu.edu.ph', date: date1, startTime: '10:00', endTime: '10:30', purpose: 'Thesis proposal review', consultationType: 'thesis', mode: 'face-to-face', status: 'confirmed', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'delacruz', studentName: 'Mark Andrew Lim', studentId: '2024002345', studentEmail: 'm.lim@pcu.edu.ph', date: date1, startTime: '11:00', endTime: '11:30', purpose: 'Grade inquiry', consultationType: 'grade', mode: 'online', status: 'pending', createdAt: new Date().toISOString() },
-      { id: PCU.generateId(), professorId: 'aguilar', studentName: 'Jasmine Cruz', studentId: '2025001122', studentEmail: 'j.cruz@pcu.edu.ph', date: date2, startTime: '14:00', endTime: '14:30', purpose: 'Capstone project guidance', consultationType: 'thesis', mode: 'face-to-face', status: 'pending', createdAt: new Date().toISOString() }
-    );
-    PCU.saveBookings();
-
-    PCU.notificationQueue.push(
-      { id: PCU.generateId(), type: 'confirmation', title: 'Booking Confirmed', message: 'Consultation with Dr. Ricardo Dela Cruz on ' + PCU.formatDate(date1) + ' at 10:00 AM confirmed.', professorId: 'delacruz', professorName: 'Dr. Ricardo Dela Cruz', timestamp: new Date(Date.now() - 3600000).toISOString(), read: false },
-      { id: PCU.generateId(), type: 'decline', title: 'Request Declined — Conflict', message: 'Meeting request with Dr. Carlos Aguilar auto-declined due to scheduling conflict.', professorId: 'aguilar', professorName: 'Dr. Carlos Aguilar', timestamp: new Date(Date.now() - 7200000).toISOString(), read: false }
-    );
-    PCU.saveNotifications();
+    // Demo data removed
   }
 
   // ─── Event Wiring ──────────────────────────────────
@@ -225,21 +203,28 @@
         }
         var serverNotifs = await PCU.apiGetNotifications(filters);
         if (Array.isArray(serverNotifs)) {
+          // Replace queue with server data to avoid cross-user leaks from localStorage
+          PCU.notificationQueue = [];
           serverNotifs.forEach(function (sn) {
-            var exists = PCU.notificationQueue.find(function (n) { return n.id === sn.id; });
-            if (!exists) {
-              PCU.notificationQueue.push({
-                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
-                professorId: sn.professor_id, professorName: sn.professor_name,
-                studentId: sn.student_id || '', studentName: sn.student_name || '',
-                timestamp: sn.timestamp, read: sn.read
-              });
-            }
+            PCU.notificationQueue.push({
+              id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+              professorId: sn.professor_id, professorName: sn.professor_name,
+              studentId: sn.student_id || '', studentName: sn.student_name || '',
+              timestamp: sn.timestamp, read: sn.read
+            });
           });
           PCU.notificationQueue.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
         }
       } catch (e) {
+        // Server unreachable — filter localStorage queue to avoid cross-user leaks
         console.warn('Failed to fetch notifications from server:', e);
+        var currentStudentId = filters.studentId || null;
+        var currentProfId = filters.professorId || null;
+        PCU.notificationQueue = PCU.notificationQueue.filter(function (n) {
+          if (currentStudentId) return n.studentId === currentStudentId;
+          if (currentProfId) return n.professorId === currentProfId;
+          return false;
+        });
       }
     }
 
@@ -346,28 +331,6 @@
   // ─── Init ──────────────────────────────────────────
   PCU.init = async function () {
     PCU.loadState();
-    seedDemoData();
-
-    // Initialize SQLite database
-    try {
-      await PCU.initDatabase();
-      // Sync localStorage bookings to SQLite
-      PCU.syncBookingsToDb();
-      console.log('SQLite database ready. Users, Students & Faculty tables created.');
-    } catch (err) {
-      console.warn('SQLite initialization failed, using localStorage only:', err);
-    }
-
-    // Clear old notifications that have both professor_id and student_id set
-    if (PCU.apiClearOldNotifications) {
-      PCU.apiClearOldNotifications().catch(function () {});
-    }
-
-    // Also clear from localStorage
-    PCU.notificationQueue = PCU.notificationQueue.filter(function (n) {
-      return !n.professorId || !n.studentId;
-    });
-    PCU.saveNotifications();
 
     // Initialize authentication
     var isLoggedIn = await PCU.initAuth();

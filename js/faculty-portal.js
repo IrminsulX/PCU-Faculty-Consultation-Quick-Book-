@@ -29,24 +29,31 @@
   };
 
   // ─── Faculty Login ───────────────────────────────
-  PCU.loginFaculty = function (facultyId, password) {
+  PCU.loginFaculty = async function (facultyId, password) {
     facultyId = facultyId.trim();
     password = password.trim();
     if (!facultyId || !password) return false;
 
-    var faculty = PCU.dbAuthenticateFaculty(facultyId, password);
-    if (!faculty) return false;
+    if (!PCU.apiLogin) return false;
+    try {
+      var result = await PCU.apiLogin(facultyId, password);
+      if (!result || !result.success || result.user.role !== 'faculty') return false;
 
-    PCU.currentFaculty = {
-      id: faculty.id,
-      faculty_id: faculty.faculty_id,
-      name: faculty.name,
-      email: faculty.email,
-      department: faculty.department,
-      specialization: faculty.specialization,
-      initials: faculty.name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
-    };
-    return true;
+      var faculty = result.user;
+      PCU.currentFaculty = {
+        id: faculty.id,
+        faculty_id: faculty.user_id,
+        name: faculty.name,
+        email: faculty.email,
+        department: faculty.department || '',
+        specialization: faculty.specialization || '',
+        initials: faculty.name.split(' ').map(function (n) { return n[0]; }).join('').substr(0, 2).toUpperCase()
+      };
+      return true;
+    } catch (e) {
+      console.warn('Faculty login failed:', e);
+      return false;
+    }
   };
 
   PCU.logoutFaculty = function () {
@@ -88,11 +95,11 @@
         '</form>' +
       '</div>';
 
-    document.getElementById('faculty-login-form').addEventListener('submit', function (e) {
+    document.getElementById('faculty-login-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       var fid = document.getElementById('faculty-login-id').value;
       var pwd = document.getElementById('faculty-login-password').value;
-      if (PCU.loginFaculty(fid, pwd)) {
+      if (await PCU.loginFaculty(fid, pwd)) {
         PCU.renderFacultyPortal();
       } else {
         document.getElementById('faculty-login-error').style.display = 'block';
@@ -134,42 +141,8 @@
       }
     }
 
-    // Get bookings from localStorage
-    var myBookings = PCU.bookings.filter(function (b) {
-      return prof ? b.professorId === prof.id : false;
-    }).sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
-
-    // Merge: add server bookings not already in localStorage
-    serverBookings.forEach(function (sb) {
-      var exists = myBookings.find(function (b) { return b.id === sb.id; });
-      if (!exists) {
-        myBookings.push(sb);
-      }
-    });
-
-    // Also get from local SQLite
-    if (prof) {
-      try {
-        var dbBookings = PCU.dbGetBookingsByProfessor(prof.id);
-        dbBookings.forEach(function (db) {
-          var exists = myBookings.find(function (b) { return b.id === db.id; });
-          if (!exists) {
-            myBookings.push({
-              id: db.id, professorId: db.professor_id, studentId: db.student_id,
-              studentName: db.student_name, studentEmail: db.student_email,
-              date: db.date, startTime: db.start_time, endTime: db.end_time,
-              purpose: db.purpose, consultationType: db.consultation_type,
-              mode: db.mode, status: db.status, createdAt: db.created_at
-            });
-          }
-        });
-      } catch (e) {
-        console.warn('Failed to fetch bookings from local database:', e);
-      }
-    }
-
-    // Re-sort after merging
-    myBookings.sort(function (a, b) { return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at); });
+    // Use server bookings only (no localStorage / local SQLite)
+    var myBookings = serverBookings;
 
     var upcoming = myBookings.filter(function (b) { return b.status === 'confirmed' && b.date >= PCU.todayStr(); });
     var pending = myBookings.filter(function (b) { return b.status === 'pending'; });
@@ -217,9 +190,8 @@
     html += '<h3 class="portal-section-title">&#x1F550; Your Consultation Hours</h3>';
     html += '<div class="faculty-schedule-editor" id="faculty-schedule-editor">';
 
-    var schedule = PCU.loadFacultySchedule(f.faculty_id);
-    var hours = schedule.consultationHours || [];
-    var bufferTime = schedule.bufferTime || 15;
+    var hours = (prof && prof.consultationHours) || [];
+    var bufferTime = (prof && prof.bufferTime) || 15;
 
     // Buffer time setting
     html += '<div class="faculty-schedule-editor__buffer">' +
@@ -310,28 +282,20 @@
     }
     html += '</div>';
 
-    // Faculty's notifications — fetch from server API and merge with local
-    var myNotifs = PCU.notificationQueue.filter(function (n) {
-      return n.professorId && prof && n.professorId === prof.id && !n.studentId;
-    });
-
-    // Also fetch from server API (only faculty's notifications)
+    // Faculty's notifications — fetch from server API only
+    var myNotifs = [];
     if (PCU.apiGetNotifications) {
       try {
         var serverNotifs = await PCU.apiGetNotifications({ professorId: prof.id });
         if (Array.isArray(serverNotifs)) {
-          serverNotifs.forEach(function (sn) {
-            var exists = myNotifs.find(function (n) { return n.id === sn.id; });
-            if (!exists) {
-              myNotifs.push({
-                id: sn.id, type: sn.type, title: sn.title, message: sn.message,
-                professorId: sn.professor_id, professorName: sn.professor_name,
-                studentId: sn.student_id || '', studentName: sn.student_name || '',
-                timestamp: sn.timestamp, read: sn.read
-              });
-            }
+          myNotifs = serverNotifs.map(function (sn) {
+            return {
+              id: sn.id, type: sn.type, title: sn.title, message: sn.message,
+              professorId: sn.professor_id, professorName: sn.professor_name,
+              studentId: sn.student_id || '', studentName: sn.student_name || '',
+              timestamp: sn.timestamp, read: sn.read
+            };
           });
-          // Re-sort after merging
           myNotifs.sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
         }
       } catch (e) {
@@ -417,11 +381,9 @@
     else if (action === 'cancel') newStatus = 'cancelled';
     else newStatus = 'completed';
 
-    // Find booking from all sources
-    var booking = PCU.bookings.find(function (b) { return b.id === bookingId; });
-
-    // Also search server API if not found locally
-    if (!booking && PCU.currentFaculty && PCU.apiGetBookingsByProfessor) {
+    // Find booking from server API
+    var booking = null;
+    if (PCU.currentFaculty && PCU.apiGetBookingsByProfessor) {
       try {
         var prof = PCU.getProfessor(PCU.currentFaculty.faculty_id);
         if (prof) {
@@ -444,17 +406,9 @@
       }
     }
 
-    PCU.dbUpdateBookingStatus(bookingId, newStatus);
-
-    // Also update on server API
+    // Update on server API
     if (PCU.apiUpdateBookingStatus) {
       PCU.apiUpdateBookingStatus(bookingId, newStatus).catch(function () {});
-    }
-
-    // Also update in localStorage
-    if (booking) {
-      booking.status = newStatus;
-      PCU.saveBookings();
     }
 
     var dateStr = (booking && booking.date) ? PCU.formatDate(booking.date) : 'the scheduled date';
@@ -462,8 +416,8 @@
     var studentName = (booking && booking.studentName) ? booking.studentName : 'the student';
     var profName = PCU.currentFaculty ? PCU.currentFaculty.name : 'faculty';
 
-    // Send notification to student about the decision (student only)
     if (action === 'approve') {
+      // Notify student
       PCU.addNotification({
         type: 'confirmation',
         title: 'Booking Approved',
@@ -471,13 +425,30 @@
         professorId: '', professorName: profName,
         studentId: booking ? booking.studentId : '', studentName: studentName
       });
+      // Notify faculty
+      PCU.addNotification({
+        type: 'confirmation',
+        title: 'Booking Approved',
+        message: 'Consultation with ' + studentName + ' on ' + dateStr + ' at ' + timeStr + ' has been settled.',
+        professorId: booking ? booking.professorId : '', professorName: profName,
+        studentId: '', studentName: studentName
+      });
     } else if (action === 'decline') {
+      // Notify student
       PCU.addNotification({
         type: 'decline',
         title: 'Booking Declined',
         message: 'Your consultation with ' + profName + ' on ' + dateStr + ' at ' + timeStr + ' has been declined.',
         professorId: '', professorName: profName,
         studentId: booking ? booking.studentId : '', studentName: studentName
+      });
+      // Notify faculty
+      PCU.addNotification({
+        type: 'decline',
+        title: 'Booking Declined',
+        message: 'Consultation with ' + studentName + ' on ' + dateStr + ' at ' + timeStr + ' has been declined.',
+        professorId: booking ? booking.professorId : '', professorName: profName,
+        studentId: '', studentName: studentName
       });
     } else {
       var notifType = action === 'cancel' ? 'decline' : 'confirmation';
@@ -486,10 +457,20 @@
         ? 'Your consultation with ' + profName + ' on ' + dateStr + ' has been cancelled.'
         : 'Your consultation with ' + profName + ' on ' + dateStr + ' has been completed.';
 
+      // Notify student
       PCU.addNotification({
         type: notifType, title: notifTitle, message: notifMsg,
         professorId: '', professorName: profName,
         studentId: booking ? booking.studentId : '', studentName: studentName
+      });
+      // Notify faculty
+      var facultyMsg = action === 'cancel'
+        ? 'Consultation with ' + studentName + ' on ' + dateStr + ' has been cancelled.'
+        : 'Consultation with ' + studentName + ' on ' + dateStr + ' has been completed.';
+      PCU.addNotification({
+        type: notifType, title: notifTitle, message: facultyMsg,
+        professorId: booking ? booking.professorId : '', professorName: profName,
+        studentId: '', studentName: studentName
       });
     }
 
@@ -589,10 +570,6 @@
     // Save to API
     var success = await PCU.saveConsultationHours(faculty.faculty_id, hours, bufferTime);
 
-    // Also save to localStorage as cache
-    var schedule = { consultationHours: hours, bufferTime: bufferTime };
-    PCU.saveFacultySchedule(faculty.faculty_id, schedule);
-
     // Update the PROFESSORS array in memory
     var prof = PCU.getProfessor(faculty.faculty_id);
     if (prof) {
@@ -603,28 +580,9 @@
     if (success) {
       alert('Schedule saved successfully!');
     } else {
-      alert('Schedule saved locally (API unavailable).');
+      alert('Failed to save schedule to server.');
     }
     PCU.renderFacultyPortal();
   };
 
-  // ─── DB Stats Panel for Faculty ──────────────────
-  PCU.renderDbStats = function () {
-    var stats = PCU.dbGetStats();
-    var container = document.getElementById('db-stats-panel');
-    if (!container) return;
-
-    container.innerHTML =
-      '<div class="db-stats">' +
-        '<h3 class="portal-section-title">&#x1F4CA; Database Statistics</h3>' +
-        '<div class="db-stats__grid">' +
-          '<div class="db-stats__item"><span class="db-stats__number">' + stats.students + '</span><span class="db-stats__label">Students</span></div>' +
-          '<div class="db-stats__item"><span class="db-stats__number">' + stats.faculty + '</span><span class="db-stats__label">Faculty</span></div>' +
-          '<div class="db-stats__item"><span class="db-stats__number">' + stats.bookings + '</span><span class="db-stats__label">Total Bookings</span></div>' +
-          '<div class="db-stats__item db-stats__item--success"><span class="db-stats__number">' + stats.confirmed + '</span><span class="db-stats__label">Confirmed</span></div>' +
-          '<div class="db-stats__item db-stats__item--danger"><span class="db-stats__number">' + stats.declined + '</span><span class="db-stats__label">Declined</span></div>' +
-          '<div class="db-stats__item db-stats__item--muted"><span class="db-stats__number">' + stats.cancelled + '</span><span class="db-stats__label">Cancelled</span></div>' +
-        '</div>' +
-      '</div>';
-  };
-})();
+  })();

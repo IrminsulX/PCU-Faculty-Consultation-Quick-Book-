@@ -64,35 +64,33 @@
         }
 
         async function init() {
-            PCU.loadState();
-            try { await PCU.initDatabase(); } catch(e) {}
-            await PCU.fetchFaculty();
+            try {
+                await PCU.fetchFaculty();
 
-            // Clear old notifications with both IDs set
-            if (PCU.apiClearOldNotifications) {
-                PCU.apiClearOldNotifications().catch(function () {});
-            }
+                var sessionId = localStorage.getItem('pcu_session_id');
+                if (!sessionId) {
+                    showLogin();
+                    return;
+                }
 
-            var sessionId = localStorage.getItem('pcu_session_id');
-            if (!sessionId) {
+                // Verify session via API
+                var result = await PCU.apiCheckSession(sessionId);
+                if (!result.valid || result.user.role !== 'student') {
+                    showLogin();
+                    return;
+                }
+
+                PCU.currentUser = result.user;
+                PCU.autoLoginStudent();
+                await PCU.renderPortal();
+
+                document.getElementById('portal-logout-btn').addEventListener('click', async function() {
+                    await PCU.logout();
+                });
+            } catch(e) {
+                console.error('Init error:', e);
                 showLogin();
-                return;
             }
-
-            // Verify session via API
-            var result = await PCU.apiCheckSession(sessionId);
-            if (!result.valid || result.user.role !== 'student') {
-                showLogin();
-                return;
-            }
-
-            PCU.currentUser = result.user;
-            PCU.autoLoginStudent();
-            await PCU.renderPortal();
-
-            document.getElementById('portal-logout-btn').addEventListener('click', async function() {
-                await PCU.logout();
-            });
         }
 
         init();

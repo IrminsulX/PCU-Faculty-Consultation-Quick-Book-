@@ -22,16 +22,6 @@
     PCU.notificationQueue.unshift(notif);
     PCU.saveNotifications();
 
-    // Save to local SQLite database
-    if (PCU.dbReady && PCU.db) {
-      PCU.dbAddNotification({
-        id: notif.id, type: notif.type, title: notif.title, message: notif.message,
-        professorId: notif.professorId, professorName: notif.professorName,
-        studentId: notif.studentId, studentName: notif.studentName,
-        timestamp: notif.timestamp, read: notif.read
-      });
-    }
-
     // Save to server API so other portals can see it
     if (PCU.apiCreateNotification) {
       PCU.apiCreateNotification({
@@ -47,7 +37,29 @@
     if (PCU.showToast) PCU.showToast(data.title, data.type);
   };
 
-  PCU.markAllRead = function () {
+  function getCurrentUserIds() {
+    var studentId = '', professorId = '';
+    var user = PCU.currentUser;
+    if (user && user.role === 'student') {
+      studentId = (user.user_id || '').replace(/^S/, '');
+    } else if (user && user.role === 'faculty') {
+      professorId = user.user_id;
+    }
+    return { studentId: studentId, professorId: professorId };
+  }
+
+  PCU.markAllRead = async function () {
+    var ids = getCurrentUserIds();
+    // Mark on server first (scoped to current user)
+    if (PCU.apiMarkAllRead) {
+      try {
+        await PCU.apiMarkAllRead(ids.studentId, ids.professorId);
+      } catch (e) {
+        console.warn('Failed to mark all as read on server:', e);
+        return;
+      }
+    }
+    // Then update local state
     PCU.notificationQueue.forEach(function (n) { n.read = true; });
     PCU.saveNotifications();
     if (PCU.updateBellBadge) PCU.updateBellBadge();
@@ -95,10 +107,19 @@
 
   PCU.clearAllNotifications = async function () {
     if (!confirm('Delete all notifications? This cannot be undone.')) return;
-    PCU.notificationQueue = [];
+    var ids = getCurrentUserIds();
+    // Delete on server first (scoped to current user)
     if (PCU.apiDeleteAllNotifications) {
-      PCU.apiDeleteAllNotifications().catch(function () {});
+      try {
+        await PCU.apiDeleteAllNotifications(ids.studentId, ids.professorId);
+      } catch (e) {
+        console.warn('Failed to delete notifications on server:', e);
+        return;
+      }
     }
+    // Then clear local state
+    PCU.notificationQueue = [];
+    PCU.saveNotifications();
     if (PCU.renderNotificationPanel) PCU.renderNotificationPanel();
     if (PCU.updateBellBadge) PCU.updateBellBadge();
   };
