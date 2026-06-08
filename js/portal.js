@@ -94,7 +94,8 @@
       message: 'Your consultation with ' + (PCU.getProfessor(booking.professorId) || {}).name + ' on ' +
         PCU.formatDate(booking.date) + ' at ' + PCU.formatTime12(booking.startTime) + ' has been cancelled.',
       professorId: booking.professorId,
-      professorName: (PCU.getProfessor(booking.professorId) || {}).name || ''
+      professorName: (PCU.getProfessor(booking.professorId) || {}).name || '',
+      studentId: booking.studentId, studentName: booking.studentName || ''
     });
 
     PCU.renderPortal();
@@ -202,9 +203,9 @@
     var upcoming = myBookings.filter(function (b) { return b.status === 'confirmed' && b.date >= PCU.todayStr(); });
     var past = myBookings.filter(function (b) { return b.status !== 'confirmed' || b.date < PCU.todayStr(); });
 
-    // Student's notifications
+    // Student's notifications (filter by studentId)
     var myNotifs = PCU.notificationQueue.filter(function (n) {
-      return n.message.toLowerCase().indexOf(s.studentName.toLowerCase()) !== -1;
+      return n.studentId === s.studentId;
     });
 
     var html =

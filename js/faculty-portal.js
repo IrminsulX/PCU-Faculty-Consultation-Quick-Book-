@@ -262,6 +262,26 @@
 
     html += '</div>';
 
+    // Faculty's notifications (filter by professorId)
+    var myNotifs = PCU.notificationQueue.filter(function (n) {
+      return n.professorId && prof && n.professorId === prof.id;
+    });
+    html += '<h3 class="portal-section-title">&#x1F514; Your Notifications</h3>';
+    html += '<div class="portal-notif-list">';
+    if (myNotifs.length === 0) {
+      html += '<p class="portal-empty">No notifications yet.</p>';
+    } else {
+      var icons = { confirmation: '\u2705', decline: '\u274C', request: '\uD83D\uDCE9', reminder: '\u23F0', info: '\u2139\uFE0F' };
+      myNotifs.slice(0, 10).forEach(function (n) {
+        html += '<div class="portal-notif-item">' +
+          '<span class="portal-notif-item__icon">' + (icons[n.type] || '\uD83D\uDD14') + '</span>' +
+          '<span class="portal-notif-item__text">' + n.message + '</span>' +
+          '<span class="portal-notif-item__time">' + PCU.timeAgo(n.timestamp) + '</span>' +
+        '</div>';
+      });
+    }
+    html += '</div>';
+
     html += '</div>';
 
     body.innerHTML = html;
@@ -332,7 +352,8 @@
     PCU.addNotification({
       type: notifType, title: notifTitle, message: notifMsg,
       professorId: booking ? booking.professorId : '',
-      professorName: PCU.currentFaculty ? PCU.currentFaculty.name : ''
+      professorName: PCU.currentFaculty ? PCU.currentFaculty.name : '',
+      studentId: booking ? booking.studentId : '', studentName: booking ? booking.studentName : ''
     });
 
     PCU.renderFacultyPortal();

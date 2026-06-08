@@ -84,6 +84,8 @@ async function initDatabase() {
         message TEXT DEFAULT '',
         professor_id TEXT DEFAULT '',
         professor_name TEXT DEFAULT '',
+        student_id TEXT DEFAULT '',
+        student_name TEXT DEFAULT '',
         timestamp TEXT DEFAULT (datetime('now')),
         read INTEGER DEFAULT 0
     )`);
@@ -421,8 +423,8 @@ app.get('/api/notifications', (req, res) => {
 app.post('/api/notifications', (req, res) => {
     const n = req.body;
     try {
-        db.run("INSERT INTO notifications (id, type, title, message, professor_id, professor_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            [n.id, n.type || 'info', n.title || 'Notification', n.message || '', n.professorId || '', n.professorName || '', n.timestamp || new Date().toISOString(), n.read ? 1 : 0]);
+        db.run("INSERT INTO notifications (id, type, title, message, professor_id, professor_name, student_id, student_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [n.id, n.type || 'info', n.title || 'Notification', n.message || '', n.professorId || '', n.professorName || '', n.studentId || '', n.studentName || '', n.timestamp || new Date().toISOString(), n.read ? 1 : 0]);
         saveDatabase();
         res.json({ success: true });
     } catch (err) {

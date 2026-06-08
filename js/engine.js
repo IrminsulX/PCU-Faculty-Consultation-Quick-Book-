@@ -129,7 +129,8 @@
           ' auto-declined. Conflicts with ' + conflictResult.conflictingBooking.studentName +
           ' (' + PCU.formatTime12(conflictResult.conflictingBooking.startTime) + '–' +
           PCU.formatTime12(conflictResult.conflictingBooking.endTime) + '). Buffer: ' + prof.bufferTime + ' min.',
-        professorId: data.professorId, professorName: prof.name
+        professorId: data.professorId, professorName: prof.name,
+        studentId: data.studentId, studentName: data.studentName || ''
       });
 
       var slots = PCU.getAvailableSlots(data.professorId, date, 30);
@@ -174,7 +175,8 @@
       message: 'Consultation with ' + prof.name + ' on ' + PCU.formatDate(date) +
         ' at ' + PCU.formatTime12(startTime) + '–' + PCU.formatTime12(endTime) +
         ' confirmed. Buffer: ' + prof.bufferTime + ' min.',
-      professorId: data.professorId, professorName: prof.name
+      professorId: data.professorId, professorName: prof.name,
+      studentId: data.studentId, studentName: data.studentName || ''
     });
 
     return { success: true, booking: confirmedBooking };

@@ -63,6 +63,9 @@
         }
 
         async function init() {
+            PCU.loadState();
+            try { await PCU.initDatabase(); } catch(e) {}
+
             var sessionId = localStorage.getItem('pcu_session_id');
             if (!sessionId) {
                 showLogin();

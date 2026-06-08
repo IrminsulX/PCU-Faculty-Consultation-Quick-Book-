@@ -534,9 +534,9 @@
     if (!PCU.db) return false;
     try {
       PCU.db.run(
-        "INSERT INTO notifications (id, type, title, message, professor_id, professor_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO notifications (id, type, title, message, professor_id, professor_name, student_id, student_name, timestamp, read) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [notif.id, notif.type || 'info', notif.title || 'Notification', notif.message || '',
-         notif.professorId || '', notif.professorName || '', notif.timestamp || new Date().toISOString(), notif.read ? 1 : 0]
+         notif.professorId || '', notif.professorName || '', notif.studentId || '', notif.studentName || '', notif.timestamp || new Date().toISOString(), notif.read ? 1 : 0]
       );
       PCU.saveDatabase();
       return true;
